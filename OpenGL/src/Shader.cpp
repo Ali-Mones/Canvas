@@ -32,6 +32,16 @@ void Shader::SetUniform4f(const std::string& name, float f0, float f1, float f2,
     glUniform4f(GetUniformLocation(name), f0, f1, f2, f3);
 }
 
+void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& mat)
+{
+    glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+}
+
+void Shader::SetUniform1i(const std::string& name, int i0)
+{
+    glUniform1i(GetUniformLocation(name), i0);
+}
+
 int Shader::GetUniformLocation(const std::string& name)
 {
     if (m_UniformLocations.find(name) == m_UniformLocations.end())
@@ -40,7 +50,7 @@ int Shader::GetUniformLocation(const std::string& name)
         if (location == -1)
             std::cout << "Uniform not found of name " << name << std::endl;
         else
-            m_UniformLocations.emplace(name, location);
+            m_UniformLocations[name] = location;
         return location;
     }
 
