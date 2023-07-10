@@ -14,6 +14,7 @@ struct ShaderProgramSource
 class Shader
 {
 public:
+	Shader() = default;
 	Shader(const std::string& filepath);
 	~Shader();
 	void Bind() const;
