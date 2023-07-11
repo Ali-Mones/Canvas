@@ -4,6 +4,7 @@
 class VertexBuffer
 {
 public:
+	VertexBuffer(uint32_t maxSize);
 	VertexBuffer(const void* data, uint32_t size);
 	~VertexBuffer();
 	void Bind() const;
@@ -11,4 +12,3 @@ public:
 private:
 	uint32_t m_RendererID;
 };
-

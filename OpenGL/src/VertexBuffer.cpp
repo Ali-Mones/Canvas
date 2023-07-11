@@ -1,6 +1,13 @@
 #include "VertexBuffer.h"
 #include <glew.h>
 
+VertexBuffer::VertexBuffer(uint32_t maxSize)
+{
+    glGenBuffers(1, &m_RendererID);
+    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+    glBufferData(GL_ARRAY_BUFFER, maxSize, nullptr, GL_DYNAMIC_DRAW);
+}
+
 VertexBuffer::VertexBuffer(const void* data, uint32_t size)
 {
     glGenBuffers(1, &m_RendererID);

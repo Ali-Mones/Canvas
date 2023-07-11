@@ -1,8 +1,26 @@
 #include "VertexArray.h"
+#include "Vertex.h"
 
 VertexArray::VertexArray()
 {
 	glGenVertexArrays(1, &m_RendererID);
+	glBindVertexArray(m_RendererID);
+
+	uint32_t offset = offsetof(Vertex, Position);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+
+	offset = offsetof(Vertex, Colour);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+
+	offset = offsetof(Vertex, TexCoords);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+
+	offset = offsetof(Vertex, TexIndex);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
 }
 
 VertexArray::~VertexArray()
@@ -23,7 +41,6 @@ void VertexArray::Unbind() const
 void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout)
 {
 	Bind();
-	vb.Bind();
 	const auto& elements = layout.Elements();
 
 	uint32_t offset = 0;

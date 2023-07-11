@@ -130,7 +130,7 @@ int main(void)
 
     shader.SetUniform1i("u_Texture", 0);
 
-    Renderer renderer;
+    Renderer renderer(vb, shader);
 
     bool show_demo_window = true;
     bool show_another_window = false;
