@@ -1,17 +1,70 @@
 #include "Renderer.h"
-#include <cstdint>
+#include <glew.h>
+#include <glm/ext/matrix_transform.hpp>
 
-static const uint32_t maxQuads = 1000;
-static const uint32_t maxIndices = maxQuads * 6;
-static const uint32_t maxVertices = maxQuads * 4;
+static const uint32_t s_MaxQuadCount = 1000;
+static const uint32_t s_MaxVertexCount = s_MaxQuadCount * 4;
+static const uint32_t s_MaxIndexCount = s_MaxQuadCount * 6;
+static uint32_t s_IndexCount = 0;
+static GLuint s_VertexArray;
+static GLuint s_VertexBuffer;
+static GLuint s_IndexBuffer;
+static std::vector<Vertex> s_Vertices;
+static std::vector<glm::vec4> s_QuadVertices;
 
-static uint32_t indices = 0;
+//Renderer::Renderer(const VertexBuffer vertexBuffer, const Shader& shader)
+//	: m_VertexBuffer(vertexBuffer), m_Shader(shader)
+//{
+//}
 
-Renderer::Renderer(Shader shader)
-	: m_Vertices(std::vector<Vertex>()), m_Shader(shader), m_VertexBuffer(maxVertices)
+//Renderer::Renderer(const Shader& shader, uint32_t maxQuadCount)
+//	: m_Shader(shader), m_VertexBuffer(maxQuadCount * 4 * sizeof(Vertex))
+//{
+//	std::vector<uint32_t> indices;
+//	for (int i = 0; i < maxQuadCount; i++)
+//	{
+//		indices.push_back(0 + i * 4);
+//		indices.push_back(1 + i * 4);
+//		indices.push_back(2 + i * 4);
+//		indices.push_back(2 + i * 4);
+//		indices.push_back(3 + i * 4);
+//		indices.push_back(0 + i * 4);
+//	}
+//
+//	m_IndexBuffer = IndexBuffer(indices.data(), indices.size());
+//	m_Shader.Bind();
+//}
+
+void Renderer::Init()
 {
+	glGenVertexArrays(1, &s_VertexArray);
+	glBindVertexArray(s_VertexArray);
+
+	glGenBuffers(1, &s_VertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, s_VertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, s_MaxVertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+
+	uint32_t offset = offsetof(Vertex, Position);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+
+	offset = offsetof(Vertex, Colour);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+
+	offset = offsetof(Vertex, TexCoords);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+
+	offset = offsetof(Vertex, TexIndex);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+
+	glGenBuffers(1, &s_IndexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_IndexBuffer);
+
 	std::vector<uint32_t> indices;
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < s_MaxQuadCount; i++)
 	{
 		indices.push_back(0 + i * 4);
 		indices.push_back(1 + i * 4);
@@ -20,125 +73,95 @@ Renderer::Renderer(Shader shader)
 		indices.push_back(3 + i * 4);
 		indices.push_back(0 + i * 4);
 	}
-	m_IndexBuffer = IndexBuffer(indices.data(), indices.size());
-	m_Shader.Bind();
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
+	s_QuadVertices.push_back({ -0.5, -0.5, 0, 1 });
+	s_QuadVertices.push_back({  0.5, -0.5, 0, 1 });
+	s_QuadVertices.push_back({  0.5,  0.5, 0, 1 });
+	s_QuadVertices.push_back({ -0.5,  0.5, 0, 1 });
 }
 
-void Renderer::Clear()
+void Renderer::BatchStart()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	s_Vertices.clear();
+	s_IndexCount = 0;
 }
 
-void Renderer::StartBatch()
+void Renderer::BatchEnd()
 {
-	m_Vertices.clear();
-	indices = 0;
+	glBindBuffer(GL_ARRAY_BUFFER, s_VertexBuffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, s_Vertices.size() * sizeof(Vertex), s_Vertices.data());
 }
-
-void Renderer::EndBatch()
-{
-	m_VertexBuffer.Bind();
-	m_VertexBuffer.SetBuffer(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
-}
-
 
 void Renderer::Flush()
 {
-	m_VertexArray.Bind();
-	m_IndexBuffer.Bind();
-	glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, nullptr);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_IndexBuffer);
+	glBindVertexArray(s_VertexArray);
+
+	glDrawElements(GL_TRIANGLES, s_IndexCount, GL_UNSIGNED_INT, nullptr);
 }
 
-void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader)
+void Renderer::Shutdown()
 {
-	shader.Bind();
-	va.Bind();
-	ib.Bind();
-	
-	glDrawElements(GL_TRIANGLES, ib.Count(), GL_UNSIGNED_INT, nullptr);
+	glDeleteBuffers(1, &s_IndexBuffer);
+	glDeleteBuffers(1, &s_VertexBuffer);
+	glDeleteVertexArrays(1, &s_VertexArray);
 }
 
-void Renderer::Quad(glm::vec2 pos, glm::vec2 dims, glm::vec4 colour)
+void Renderer::Clear(glm::vec4 colour)
 {
-	if (m_Vertices.size() + 4 > maxVertices)
+	glClearColor(colour.r, colour.g, colour.b, colour.a);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation)
+{
+	if (s_Vertices.size() == s_MaxVertexCount)
 	{
-		EndBatch();
+		BatchEnd();
 		Flush();
-		StartBatch();
+		BatchStart();
 	}
 
+	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::rotate(glm::mat4(1), rotation, { 0, 0, 1 }) * glm::scale(glm::mat4(1), dims);
+
 	Vertex v1 =
 	{
-		{ pos.x, pos.y, 0, 1 },
-		colour,
-		{ 0, 0 },
-		1
-	};
-	m_Vertices.push_back(v1);
-
-	Vertex v2 =
-	{
-		{ pos.x + dims.x, pos.y, 0, 1 },
-		colour,
-		{ 1, 0 },
-		1
-	};
-	m_Vertices.push_back(v2);
-
-	Vertex v3 =
-	{
-		{ pos.x + dims.x, pos.y + dims.y, 0, 1 },
-		colour,
-		{ 1, 1 },
-		1
-	};
-	m_Vertices.push_back(v3);
-
-	Vertex v4 =
-	{
-		{ pos.x, pos.y + dims.y, 0, 1 },
-		colour,
-		{ 0, 1 },
-		1
-	};
-	m_Vertices.push_back(v4);
-
-	indices += 6;
-}
-
-std::vector<Vertex> Renderer::Rect(glm::vec2 pos, glm::vec2 dims, glm::vec4 colour)
-{
-	Vertex v1 =
-	{
-		{ pos.x, pos.y, 0, 1 },
-		colour,
+		transform * s_QuadVertices[0],
+		{ colour.r, colour.g, colour.b, colour.a },
 		{ 0, 0 },
 		1
 	};
 
 	Vertex v2 =
 	{
-		{ pos.x + dims.x, pos.y, 0, 1 },
-		colour,
+		transform* s_QuadVertices[1],
+		{ colour.r, colour.g, colour.b, colour.a },
 		{ 1, 0 },
 		1
 	};
 
 	Vertex v3 =
 	{
-		{ pos.x + dims.x, pos.y + dims.y, 0, 1 },
-		colour,
+		transform* s_QuadVertices[2],
+		{ colour.r, colour.g, colour.b, colour.a },
 		{ 1, 1 },
 		1
 	};
 
 	Vertex v4 =
 	{
-		{ pos.x, pos.y + dims.y, 0, 1 },
-		colour,
+		transform* s_QuadVertices[3],
+		{ colour.r, colour.g, colour.b, colour.a },
 		{ 0, 1 },
 		1
 	};
 
-	return { v1, v2, v3, v4 };
+	s_IndexCount += 6;
+
+	s_Vertices.push_back(v1);
+	s_Vertices.push_back(v2);
+	s_Vertices.push_back(v3);
+	s_Vertices.push_back(v4);
 }

@@ -1,25 +1,19 @@
 #pragma once
-#include "VertexArray.h"
 #include "Shader.h"
-#include "IndexBuffer.h"
 #include "Vertex.h"
+#include "Shape.h"
 
-class Renderer
+static class Renderer
 {
 public:
-	Renderer(Shader shader);
-	void Clear();
-	void StartBatch();
-	void EndBatch();
-	void Flush();
-	void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader);
-	void Quad(glm::vec2 pos, glm::vec2 dims, glm::vec4 colour);
-	std::vector<Vertex> Rect(glm::vec2 pos, glm::vec2 dims, glm::vec4 colour);
+	static void Init();
+	static void BatchStart();
+	static void BatchEnd();
+	static void Flush();
+	static void Shutdown();
 
-private:
-	std::vector<Vertex> m_Vertices;
-	VertexBuffer m_VertexBuffer;
-	IndexBuffer m_IndexBuffer;
-	VertexArray m_VertexArray;
-	Shader m_Shader;
+	static void Clear(glm::vec4 colour);
+	static void RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation = 0.0f);
+	static void RenderQuad(Quad quad) { RenderQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation); };
 };
+
