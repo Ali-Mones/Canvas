@@ -5,10 +5,6 @@
 #include <string>
 #include <sstream>
 
-#include "VertexBuffer.h"
-#include "VertexBufferLayout.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
 #include "Shader.h"
 #include "Renderer.h"
 #include "Texture.h"
@@ -90,55 +86,30 @@ int main(void)
 
     std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
 
-    std::vector<float> vertices =
-    {
-        -50.0f, -50.0f, 0.0f, 0.0f,
-         50.0f, -50.0f, 1.0f, 0.0f,
-         50.0f,  50.0f, 1.0f, 1.0f,
-        -50.0f,  50.0f, 0.0f, 1.0f
-    };
-
-    std::vector<uint32_t> indices =
-    { 
-      0, 1, 2,
-      2, 3, 0
-    };
-
     glm::mat4 proj = glm::ortho(0.0f, (float) WINDOW_WIDTH, 0.0f, (float) WINDOW_HEIGHT, -1.0f, 1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
     
-
     Shader shader("res/shaders/basic.shader");
     shader.Bind();
-    shader.SetUniform4f("u_Colour", 1.0f, 1.0f, 0.5f, 1.0f);
-
-    //create a vertex array object
-    VertexArray va;
-    VertexBufferLayout layout;
-    layout.Push<float>(2);
-    layout.Push<float>(2);
-
-    /* create a vertex buffer and bind it to use it */
-    VertexBuffer vb(vertices.data(), vertices.size() * sizeof(float));
-    va.AddBuffer(vb, layout);
-
-    // index buffer
-    IndexBuffer ib(indices.data(), indices.size());
 
     Texture texture("res/textures/heart.png");
     texture.Bind();
 
-    shader.SetUniform1i("u_Texture", 0);
+    //shader.SetUniform1i("u_Texture", 0);
 
-    Renderer renderer(vb, shader);
+    Renderer::Init();
 
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    glm::vec3 translateA(0, 100, 0);
+    glm::vec3 translateA(400, 100, 0);
+    glm::vec3 translateB(900, 100, 0);
 
-    glm::vec3 translateB(200, 500, 0);
+    glm::mat4 vp = proj * view;
+    shader.SetUniformMat4f("u_ViewProjection", vp);
+        
+    float rotation = 0.0f;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -159,17 +130,18 @@ int main(void)
 
         /* Render here */
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        renderer.Clear();
+        Renderer::Clear();
 
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), translateA);
-        glm::mat4 mvp = proj * view * model;
-        shader.SetUniformMat4f("u_ModelViewProjection", mvp);
-        renderer.Draw(va, ib, shader);
+        Renderer::BatchStart();
 
-        model = glm::translate(glm::mat4(1.0f), translateB);
-        mvp = proj * view * model;
-        shader.SetUniformMat4f("u_ModelViewProjection", mvp);
-        renderer.Draw(va, ib, shader);
+        Renderer::Quad(translateA, { 200, 200, 0 }, { 1, 1, 0, 1 }, rotation);
+        Renderer::Quad(translateB, { 200, 200, 0 }, { 1, 1, 1, 1 }, rotation);
+        Renderer::Quad(translateB * 1.2f, { 200, 200, 0 }, { 0.8, 0.2, 1, 1 }, rotation);
+
+        Renderer::BatchEnd();
+        Renderer::Flush();
+
+        rotation += 0.01f;
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -180,6 +152,8 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
+
+    Renderer::Shutdown();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
