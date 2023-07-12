@@ -109,12 +109,13 @@ void Renderer::Shutdown()
 	glDeleteVertexArrays(1, &s_VertexArray);
 }
 
-void Renderer::Clear()
+void Renderer::Clear(glm::vec4 colour)
 {
+	glClearColor(colour.r, colour.g, colour.b, colour.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Renderer::Quad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation)
+void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation)
 {
 	if (s_Vertices.size() == s_MaxVertexCount)
 	{

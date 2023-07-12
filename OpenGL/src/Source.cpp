@@ -14,6 +14,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_glfw.h>
+#include "Scene.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
@@ -31,7 +32,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Help me pls!!", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Open GL", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -46,9 +47,7 @@ int main(void)
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void) io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    ImGuiIO& io = ImGui::GetIO();
 
     //ImGui::StyleColorsDark();
     ImGui::StyleColorsLight();
@@ -99,17 +98,12 @@ int main(void)
 
     Renderer::Init();
 
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    glm::vec3 translateA(400, 100, 0);
-    glm::vec3 translateB(900, 100, 0);
-
     glm::mat4 vp = proj * view;
     shader.SetUniformMat4f("u_ViewProjection", vp);
-        
-    float rotation = 0.0f;
+
+    Scene* scene = new Scene(window);
+    scene->SubmitQuad({ 400, 100, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
+    scene->SubmitQuad({ 600, 100, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -118,30 +112,7 @@ int main(void)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        {
-            ImGui::Begin("Hello, world!");
-
-            ImGui::DragFloat2("TranslateA", &translateA.x);
-            ImGui::DragFloat2("TranslateB", &translateB.x);
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-
-            ImGui::End();
-        }
-
-        /* Render here */
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        Renderer::Clear();
-
-        Renderer::BatchStart();
-
-        Renderer::Quad(translateA, { 200, 200, 0 }, { 1, 1, 0, 1 }, rotation);
-        Renderer::Quad(translateB, { 200, 200, 0 }, { 1, 1, 1, 1 }, rotation);
-        Renderer::Quad(translateB * 1.2f, { 200, 200, 0 }, { 0.8, 0.2, 1, 1 }, rotation);
-
-        Renderer::BatchEnd();
-        Renderer::Flush();
-
-        rotation += 0.01f;
+        scene->OnUpdate();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -154,6 +125,7 @@ int main(void)
     }
 
     Renderer::Shutdown();
+    delete scene;
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
