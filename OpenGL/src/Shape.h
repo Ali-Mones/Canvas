@@ -6,19 +6,30 @@ struct Shape
 	glm::vec3 Position;
 	glm::vec3 Dimensions;
 	glm::vec4 Colour;
-	float Rotation;
 
 	Shape(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec4& colour, float rotation = 0.0f)
-		: Position(position), Dimensions(dimensions), Colour(colour), Rotation(rotation)
+		: Position(position), Dimensions(dimensions), Colour(colour)
 	{
 	}
 };
 
 struct Quad : public Shape
 {
+	float Rotation;
+
 	Quad(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec4& colour, float rotation = 0.0f)
-		: Shape(position, dimensions, colour, rotation)
+		: Shape(position, dimensions, colour), Rotation(rotation)
 	{
 	}
 };
 
+struct Circle : public Shape
+{
+	float Thickness;
+	float Fade;
+
+	Circle(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec4 colour, float thickness = 1.0f, float fade = 0.02f)
+		: Shape(position, dimensions, colour), Thickness(thickness), Fade(fade)
+	{
+	}
+};

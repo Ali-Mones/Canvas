@@ -16,10 +16,12 @@
 #include <imgui/imgui_impl_glfw.h>
 #include "Scene.h"
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
-
 #define ASSERT(x) if (!(x)) __debugbreak();
+
+static uint32_t windowWidth = 1280;
+static uint32_t windowHeight = 720;
+
+static glm::mat4 proj = glm::ortho(0.0f, (float) windowWidth, 0.0f, (float) windowHeight, -1.0f, 1.0f);
 
 int main(void)
 {
@@ -32,7 +34,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Open GL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Open GL", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -54,7 +56,7 @@ int main(void)
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    const char* glsl_version = "#version 130";
+    const char* glsl_version = "#version 330";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Load Fonts
@@ -85,11 +87,8 @@ int main(void)
 
     std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
 
-    glm::mat4 proj = glm::ortho(0.0f, (float) WINDOW_WIDTH, 0.0f, (float) WINDOW_HEIGHT, -1.0f, 1.0f);
+    proj = glm::ortho(0.0f, (float) windowWidth, 0.0f, (float) windowHeight, -1.0f, 1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-    
-    Shader shader("res/shaders/basic.shader");
-    shader.Bind();
 
     Texture texture("res/textures/heart.png");
     texture.Bind();
@@ -99,11 +98,13 @@ int main(void)
     Renderer::Init();
 
     glm::mat4 vp = proj * view;
-    shader.SetUniformMat4f("u_ViewProjection", vp);
+    Renderer::QuadShader()->SetUniformMat4f("u_ViewProjection", vp);
+    Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
 
     Scene* scene = new Scene(window);
     scene->SubmitQuad({ 400, 100, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
     scene->SubmitQuad({ 600, 100, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
+    scene->SubmitCircle({ 900, 300, 0 }, { 200, 200, 0 }, { 1, 1, 0, 1 });
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -113,6 +114,20 @@ int main(void)
         ImGui::NewFrame();
 
         scene->OnUpdate();
+          
+        /* Window resizing */
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        if (width != windowWidth || height != windowHeight)
+        {
+            glViewport(0, 0, width, height);
+            windowWidth = width;
+            windowHeight = height;
+            proj = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight), -1.0f, 1.0f);
+            vp = proj * view;
+            Renderer::QuadShader()->SetUniformMat4f("u_ViewProjection", vp);
+            Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
+        }
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

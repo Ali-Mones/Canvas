@@ -27,24 +27,16 @@ void Scene::OnUpdate()
 void Scene::OnInputUpdate()
 {
 	if (KeyboardInput(GLFW_KEY_LEFT))
-	{
-		m_Shapes[0].Position.x -= 10;
-	}
+		m_Circles[0].Position.x -= 10;
 
 	if (KeyboardInput(GLFW_KEY_RIGHT))
-	{
-		m_Shapes[0].Position.x += 10;
-	}
+		m_Circles[0].Position.x += 10;
 
 	if (KeyboardInput(GLFW_KEY_UP))
-	{
-		m_Shapes[0].Position.y += 10;
-	}
+		m_Circles[0].Position.y += 10;
 
 	if (KeyboardInput(GLFW_KEY_DOWN))
-	{
-		m_Shapes[0].Position.y -= 10;
-	}
+		m_Circles[0].Position.y -= 10;
 
 	if (MouseInput(GLFW_MOUSE_BUTTON_LEFT))
 	{
@@ -53,7 +45,7 @@ void Scene::OnInputUpdate()
 		glfwGetWindowSize(m_Window, &width, &height);
 		glfwGetCursorPos(m_Window, &xpos, &ypos);
 		Quad q({ (float) xpos, (float) height - ypos, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 });
-		m_Shapes.push_back(q);
+		m_Quads.push_back(q);
 	}
 }
 
@@ -62,8 +54,11 @@ void Scene::OnRender()
 	Renderer::Clear(m_ClearColour);
 	Renderer::BatchStart();
 
-	for (auto& shape : m_Shapes)
-		Renderer::RenderQuad(shape);
+	for (auto& quad : m_Quads)
+		Renderer::RenderQuad(quad);
+
+	for (auto& circle : m_Circles)
+		Renderer::RenderCircle(circle);
 
 	Renderer::BatchEnd();
 	Renderer::Flush();
@@ -71,16 +66,15 @@ void Scene::OnRender()
 
 void Scene::OnImGuiRender()
 {
-	ImGui::Begin("IDK");
+	ImGui::Begin("Stats");
 
-	for (auto& shape : m_Shapes)
-	{
-		int index = &shape - &m_Shapes[0];
-		std::string positionLabel = "shape " + std::to_string(index + 1) + " position";
-		std::string colourLabel = "shape " + std::to_string(index + 1) + " colour";
-		ImGui::DragFloat3(positionLabel.c_str(), &shape.Position.x);
-		ImGui::ColorEdit4(colourLabel.c_str(), &shape.Colour.r);
-	}
+	auto& io = ImGui::GetIO();
+
+	uint32_t drawCalls = Renderer::DrawCalls();
+	uint32_t quadCount = Renderer::QuadCount();
+	
+	ImGui::Text("FPS = %f", io.Framerate);
+	ImGui::Text("Draw Calls = %d, Quad Count = %d", drawCalls, quadCount);
 
 	ImGui::End();
 }
@@ -88,5 +82,11 @@ void Scene::OnImGuiRender()
 void Scene::SubmitQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation)
 {
 	Quad quad = { pos, dims, colour, rotation };
-	m_Shapes.push_back(quad);
+	m_Quads.push_back(quad);
+}
+
+void Scene::SubmitCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade)
+{
+	Circle c = { pos, dims, colour, thickness, fade };
+	m_Circles.push_back(c);
 }

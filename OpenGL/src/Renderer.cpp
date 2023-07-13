@@ -1,70 +1,101 @@
 #include "Renderer.h"
+#include "Shader.h"
 #include <glew.h>
 #include <glm/ext/matrix_transform.hpp>
 
-static const uint32_t s_MaxQuadCount = 1000;
-static const uint32_t s_MaxVertexCount = s_MaxQuadCount * 4;
-static const uint32_t s_MaxIndexCount = s_MaxQuadCount * 6;
-static uint32_t s_IndexCount = 0;
-static GLuint s_VertexArray;
-static GLuint s_VertexBuffer;
-static GLuint s_IndexBuffer;
-static std::vector<Vertex> s_Vertices;
-static std::vector<glm::vec4> s_QuadVertices;
+struct RenderData
+{
+	uint32_t QuadIndexBuffer;
 
-//Renderer::Renderer(const VertexBuffer vertexBuffer, const Shader& shader)
-//	: m_VertexBuffer(vertexBuffer), m_Shader(shader)
-//{
-//}
+	uint32_t QuadIndexCount = 0;
+	uint32_t QuadVertexArray;
+	uint32_t QuadVertexBuffer;
+	std::vector<QuadVertex> QuadVertices;
+	Shader* QuadShader;
 
-//Renderer::Renderer(const Shader& shader, uint32_t maxQuadCount)
-//	: m_Shader(shader), m_VertexBuffer(maxQuadCount * 4 * sizeof(Vertex))
-//{
-//	std::vector<uint32_t> indices;
-//	for (int i = 0; i < maxQuadCount; i++)
-//	{
-//		indices.push_back(0 + i * 4);
-//		indices.push_back(1 + i * 4);
-//		indices.push_back(2 + i * 4);
-//		indices.push_back(2 + i * 4);
-//		indices.push_back(3 + i * 4);
-//		indices.push_back(0 + i * 4);
-//	}
-//
-//	m_IndexBuffer = IndexBuffer(indices.data(), indices.size());
-//	m_Shader.Bind();
-//}
+	uint32_t CircleIndexCount = 0;
+	uint32_t CircleVertexArray;
+	uint32_t CircleVertexBuffer;
+	std::vector<CircleVertex> CircleVertices;
+	Shader* CircleShader;
+
+	std::vector<glm::vec4> UnitQuadVertices;
+
+	// stats
+	const uint32_t MaxQuadCount = 1000;
+	const uint32_t MaxVertexCount = MaxQuadCount * 4;
+	const uint32_t MaxIndexCount = MaxQuadCount * 6;
+
+	uint32_t QuadCount = 0;
+	uint32_t DrawCalls = 0;
+};
+
+static RenderData s_RenderData;
 
 void Renderer::Init()
 {
-	glGenVertexArrays(1, &s_VertexArray);
-	glBindVertexArray(s_VertexArray);
+	// Quad initialisation
+	s_RenderData.QuadShader = new Shader("res/shaders/QuadShader.shader");
 
-	glGenBuffers(1, &s_VertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, s_VertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, s_MaxVertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+	glGenVertexArrays(1, &s_RenderData.QuadVertexArray);
+	glBindVertexArray(s_RenderData.QuadVertexArray);
 
-	uint32_t offset = offsetof(Vertex, Position);
+	glGenBuffers(1, &s_RenderData.QuadVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.QuadVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, s_RenderData.MaxVertexCount * sizeof(QuadVertex), nullptr, GL_DYNAMIC_DRAW);
+
+	uint32_t offset = offsetof(QuadVertex, Position);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
 
-	offset = offsetof(Vertex, Colour);
+	offset = offsetof(QuadVertex, Colour);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
 
-	offset = offsetof(Vertex, TexCoords);
+	offset = offsetof(QuadVertex, TexCoords);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
 
-	offset = offsetof(Vertex, TexIndex);
+	offset = offsetof(QuadVertex, TexIndex);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) offset);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
 
-	glGenBuffers(1, &s_IndexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_IndexBuffer);
+	// Circle initialisation
+	s_RenderData.CircleShader = new Shader("res/shaders/CircleShader.shader");
+
+	glGenVertexArrays(1, &s_RenderData.CircleVertexArray);
+	glBindVertexArray(s_RenderData.CircleVertexArray);
+
+	glGenBuffers(1, &s_RenderData.CircleVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.CircleVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, s_RenderData.MaxVertexCount * sizeof(CircleVertex), nullptr, GL_DYNAMIC_DRAW);
+
+	offset = offsetof(CircleVertex, Position);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
+
+	offset = offsetof(CircleVertex, LocalPosition);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
+
+	offset = offsetof(CircleVertex, Colour);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
+
+	offset = offsetof(CircleVertex, Thickness);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
+
+	offset = offsetof(CircleVertex, Fade);
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
+
+	// Index buffer initialisation
+	glGenBuffers(1, &s_RenderData.QuadIndexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_RenderData.QuadIndexBuffer);
 
 	std::vector<uint32_t> indices;
-	for (int i = 0; i < s_MaxQuadCount; i++)
+	for (int i = 0; i < s_RenderData.MaxQuadCount; i++)
 	{
 		indices.push_back(0 + i * 4);
 		indices.push_back(1 + i * 4);
@@ -76,48 +107,72 @@ void Renderer::Init()
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
-	s_QuadVertices.push_back({ -0.5, -0.5, 0, 1 });
-	s_QuadVertices.push_back({  0.5, -0.5, 0, 1 });
-	s_QuadVertices.push_back({  0.5,  0.5, 0, 1 });
-	s_QuadVertices.push_back({ -0.5,  0.5, 0, 1 });
+	s_RenderData.UnitQuadVertices.push_back({ -0.5, -0.5, 0, 1 });
+	s_RenderData.UnitQuadVertices.push_back({  0.5, -0.5, 0, 1 });
+	s_RenderData.UnitQuadVertices.push_back({  0.5,  0.5, 0, 1 });
+	s_RenderData.UnitQuadVertices.push_back({ -0.5,  0.5, 0, 1 });
 }
 
 void Renderer::BatchStart()
 {
-	s_Vertices.clear();
-	s_IndexCount = 0;
+	s_RenderData.QuadVertices.clear();
+	s_RenderData.QuadIndexCount = 0;
+
+	s_RenderData.CircleVertices.clear();
+	s_RenderData.CircleIndexCount = 0;
 }
 
 void Renderer::BatchEnd()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, s_VertexBuffer);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, s_Vertices.size() * sizeof(Vertex), s_Vertices.data());
+	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.QuadVertexBuffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, s_RenderData.QuadVertices.size() * sizeof(QuadVertex), s_RenderData.QuadVertices.data());
+
+	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.CircleVertexBuffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, s_RenderData.CircleVertices.size() * sizeof(CircleVertex), s_RenderData.CircleVertices.data());
 }
 
 void Renderer::Flush()
 {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_IndexBuffer);
-	glBindVertexArray(s_VertexArray);
+	glBindVertexArray(s_RenderData.QuadVertexArray);
+	s_RenderData.QuadShader->Bind();
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_RenderData.QuadIndexBuffer);
+	glDrawElements(GL_TRIANGLES, s_RenderData.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
 
-	glDrawElements(GL_TRIANGLES, s_IndexCount, GL_UNSIGNED_INT, nullptr);
+	
+	glBindVertexArray(s_RenderData.CircleVertexArray);
+	s_RenderData.CircleShader->Bind();
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_RenderData.QuadIndexBuffer);
+	glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
+
+	s_RenderData.DrawCalls += 2;
 }
 
 void Renderer::Shutdown()
 {
-	glDeleteBuffers(1, &s_IndexBuffer);
-	glDeleteBuffers(1, &s_VertexBuffer);
-	glDeleteVertexArrays(1, &s_VertexArray);
+	delete s_RenderData.QuadShader;
+	delete s_RenderData.CircleShader;
+
+	glDeleteBuffers(1, &s_RenderData.QuadIndexBuffer);
+
+	glDeleteBuffers(1, &s_RenderData.QuadVertexBuffer);
+	glDeleteVertexArrays(1, &s_RenderData.QuadVertexArray);
+
+	glDeleteBuffers(1, &s_RenderData.CircleVertexBuffer);
+	glDeleteVertexArrays(1, &s_RenderData.CircleVertexArray);
 }
 
 void Renderer::Clear(glm::vec4 colour)
 {
+	s_RenderData.DrawCalls = 0;
+	s_RenderData.QuadCount = 0;
+
 	glClearColor(colour.r, colour.g, colour.b, colour.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation)
 {
-	if (s_Vertices.size() == s_MaxVertexCount)
+	if (s_RenderData.QuadVertices.size() == s_RenderData.MaxVertexCount)
 	{
 		BatchEnd();
 		Flush();
@@ -126,42 +181,113 @@ void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::rotate(glm::mat4(1), rotation, { 0, 0, 1 }) * glm::scale(glm::mat4(1), dims);
 
-	Vertex v1 =
+	QuadVertex v1 =
 	{
-		transform * s_QuadVertices[0],
+		transform * s_RenderData.UnitQuadVertices[0],
 		{ colour.r, colour.g, colour.b, colour.a },
 		{ 0, 0 },
 		1
 	};
 
-	Vertex v2 =
+	QuadVertex v2 =
 	{
-		transform* s_QuadVertices[1],
+		transform * s_RenderData.UnitQuadVertices[1],
 		{ colour.r, colour.g, colour.b, colour.a },
 		{ 1, 0 },
 		1
 	};
 
-	Vertex v3 =
+	QuadVertex v3 =
 	{
-		transform* s_QuadVertices[2],
+		transform * s_RenderData.UnitQuadVertices[2],
 		{ colour.r, colour.g, colour.b, colour.a },
 		{ 1, 1 },
 		1
 	};
 
-	Vertex v4 =
+	QuadVertex v4 =
 	{
-		transform* s_QuadVertices[3],
+		transform * s_RenderData.UnitQuadVertices[3],
 		{ colour.r, colour.g, colour.b, colour.a },
 		{ 0, 1 },
 		1
 	};
 
-	s_IndexCount += 6;
+	s_RenderData.QuadIndexCount += 6;
+	
+	s_RenderData.QuadVertices.push_back(v1);
+	s_RenderData.QuadVertices.push_back(v2);
+	s_RenderData.QuadVertices.push_back(v3);
+	s_RenderData.QuadVertices.push_back(v4);
 
-	s_Vertices.push_back(v1);
-	s_Vertices.push_back(v2);
-	s_Vertices.push_back(v3);
-	s_Vertices.push_back(v4);
+	s_RenderData.QuadCount++;
+}
+
+void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade)
+{
+	if (s_RenderData.CircleVertices.size() == s_RenderData.MaxVertexCount)
+	{
+		BatchEnd();
+		Flush();
+		BatchStart();
+	}
+
+	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::scale(glm::mat4(1), dims);
+
+	CircleVertex v1 =
+	{
+		transform * s_RenderData.UnitQuadVertices[0],
+		s_RenderData.UnitQuadVertices[0] * 2.0f,
+		{ colour.r, colour.g, colour.b, colour.a }
+	};
+
+	CircleVertex v2 =
+	{
+		transform * s_RenderData.UnitQuadVertices[1],
+		s_RenderData.UnitQuadVertices[1] * 2.0f,
+		{ colour.r, colour.g, colour.b, colour.a },
+	};
+
+	CircleVertex v3 =
+	{
+		transform * s_RenderData.UnitQuadVertices[2],
+		s_RenderData.UnitQuadVertices[2] * 2.0f,
+		{ colour.r, colour.g, colour.b, colour.a },
+	};
+
+	CircleVertex v4 =
+	{
+		transform * s_RenderData.UnitQuadVertices[3],
+		s_RenderData.UnitQuadVertices[3] * 2.0f,
+		{ colour.r, colour.g, colour.b, colour.a },
+	};
+
+	s_RenderData.CircleIndexCount += 6;
+
+	s_RenderData.CircleVertices.push_back(v1);
+	s_RenderData.CircleVertices.push_back(v2);
+	s_RenderData.CircleVertices.push_back(v3);
+	s_RenderData.CircleVertices.push_back(v4);
+
+	s_RenderData.QuadCount++;
+}
+
+uint32_t Renderer::QuadCount()
+{
+	return s_RenderData.QuadCount;
+}
+
+uint32_t Renderer::DrawCalls()
+{
+	return s_RenderData.DrawCalls;
+}
+
+Shader* Renderer::QuadShader()
+{
+	return s_RenderData.QuadShader;
+}
+
+Shader* Renderer::CircleShader()
+{
+	return s_RenderData.CircleShader;
 }
