@@ -17,4 +17,3 @@ private:
 	uint8_t* m_Localbuffer;
 	int m_Width, m_Height, m_BPP;
 };
-

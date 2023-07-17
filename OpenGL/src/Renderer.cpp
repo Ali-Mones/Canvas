@@ -19,7 +19,7 @@ struct RenderData
 	std::vector<CircleVertex> CircleVertices;
 	Shader* CircleShader;
 
-	std::vector<glm::vec4> UnitQuadVertices;
+	glm::vec4 UnitQuadVertices[4];
 
 	// stats
 	const uint32_t MaxQuadCount = 1000;
@@ -107,10 +107,10 @@ void Renderer::Init()
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
-	s_RenderData.UnitQuadVertices.push_back({ -0.5, -0.5, 0, 1 });
-	s_RenderData.UnitQuadVertices.push_back({  0.5, -0.5, 0, 1 });
-	s_RenderData.UnitQuadVertices.push_back({  0.5,  0.5, 0, 1 });
-	s_RenderData.UnitQuadVertices.push_back({ -0.5,  0.5, 0, 1 });
+	s_RenderData.UnitQuadVertices[0] = { -0.5, -0.5, 0, 1 };
+	s_RenderData.UnitQuadVertices[1] = {  0.5, -0.5, 0, 1 };
+	s_RenderData.UnitQuadVertices[2] = {  0.5,  0.5, 0, 1 };
+	s_RenderData.UnitQuadVertices[3] = { -0.5,  0.5, 0, 1 };
 }
 
 void Renderer::BatchStart()
@@ -238,7 +238,9 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 	{
 		transform * s_RenderData.UnitQuadVertices[0],
 		s_RenderData.UnitQuadVertices[0] * 2.0f,
-		{ colour.r, colour.g, colour.b, colour.a }
+		{ colour.r, colour.g, colour.b, colour.a },
+		thickness,
+		fade
 	};
 
 	CircleVertex v2 =
@@ -246,6 +248,8 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 		transform * s_RenderData.UnitQuadVertices[1],
 		s_RenderData.UnitQuadVertices[1] * 2.0f,
 		{ colour.r, colour.g, colour.b, colour.a },
+		thickness,
+		fade
 	};
 
 	CircleVertex v3 =
@@ -253,6 +257,8 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 		transform * s_RenderData.UnitQuadVertices[2],
 		s_RenderData.UnitQuadVertices[2] * 2.0f,
 		{ colour.r, colour.g, colour.b, colour.a },
+		thickness,
+		fade
 	};
 
 	CircleVertex v4 =
@@ -260,6 +266,8 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 		transform * s_RenderData.UnitQuadVertices[3],
 		s_RenderData.UnitQuadVertices[3] * 2.0f,
 		{ colour.r, colour.g, colour.b, colour.a },
+		thickness,
+		fade
 	};
 
 	s_RenderData.CircleIndexCount += 6;

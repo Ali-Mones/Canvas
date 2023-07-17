@@ -104,7 +104,7 @@ int main(void)
     Scene* scene = new Scene(window);
     scene->SubmitQuad({ 400, 100, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
     scene->SubmitQuad({ 600, 100, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
-    scene->SubmitCircle({ 900, 300, 0 }, { 200, 200, 0 }, { 1, 1, 0, 1 });
+    scene->SubmitCircle({ 900, 300, 0 }, { 200, 100, 0 }, { 1, 1, 0, 1 }, 0.2f);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))

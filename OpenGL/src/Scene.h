@@ -22,4 +22,3 @@ private:
 	std::vector<Circle> m_Circles;
 	glm::vec4 m_ClearColour = { 0.0f, 0.0f, 0.0f, 1.0f };
 };
-

@@ -31,4 +31,3 @@ private:
 	uint32_t m_RendererID;
 	std::unordered_map<std::string, int> m_UniformLocations;
 };
-
