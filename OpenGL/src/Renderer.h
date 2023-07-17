@@ -3,16 +3,14 @@
 #include "Vertex.h"
 #include "Shape.h"
 
-struct RenderStats;
-
-static class Renderer
+class Renderer
 {
 public:
 	static void Init();
-	static void BatchStart();
-	static void BatchEnd();
-	static void Flush();
 	static void Shutdown();
+
+	static void StartBatch();
+	static void Flush();
 
 	static void Clear(glm::vec4 colour);
 

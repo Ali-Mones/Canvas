@@ -45,7 +45,7 @@ int main(void)
     glfwMakeContextCurrent(window);
 
     // vsync on
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

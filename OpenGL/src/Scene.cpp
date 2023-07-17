@@ -44,15 +44,14 @@ void Scene::OnInputUpdate()
 		int width, height;
 		glfwGetWindowSize(m_Window, &width, &height);
 		glfwGetCursorPos(m_Window, &xpos, &ypos);
-		Quad q({ (float) xpos, (float) height - ypos, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 });
-		m_Quads.push_back(q);
+		SubmitQuad({ (float) xpos, (float) height - ypos, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 });
 	}
 }
 
 void Scene::OnRender()
 {
 	Renderer::Clear(m_ClearColour);
-	Renderer::BatchStart();
+	Renderer::StartBatch();
 
 	for (auto& quad : m_Quads)
 		Renderer::RenderQuad(quad);
@@ -60,7 +59,6 @@ void Scene::OnRender()
 	for (auto& circle : m_Circles)
 		Renderer::RenderCircle(circle);
 
-	Renderer::BatchEnd();
 	Renderer::Flush();
 }
 

@@ -15,6 +15,7 @@ VertexArray::~VertexArray()
 template<>
 void VertexArray::SetLayout<QuadVertex>()
 {
+	Bind();
 	uint32_t offset = offsetof(QuadVertex, Position);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
@@ -35,6 +36,7 @@ void VertexArray::SetLayout<QuadVertex>()
 template<>
 void VertexArray::SetLayout<CircleVertex>()
 {
+	Bind();
 	uint32_t offset = offsetof(CircleVertex, Position);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);

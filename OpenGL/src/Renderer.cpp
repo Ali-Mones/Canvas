@@ -2,32 +2,35 @@
 #include "Shader.h"
 #include <glew.h>
 #include <glm/ext/matrix_transform.hpp>
+#include "VertexArray.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 struct RenderData
 {
-	uint32_t QuadIndexBuffer;
+	IndexBuffer* QuadIndexBuffer;
 
 	uint32_t QuadIndexCount = 0;
-	uint32_t QuadVertexArray;
-	uint32_t QuadVertexBuffer;
+	VertexArray* QuadVertexArray;
+	VertexBuffer* QuadVertexBuffer;
 	std::vector<QuadVertex> QuadVertices;
 	Shader* QuadShader;
 
 	uint32_t CircleIndexCount = 0;
-	uint32_t CircleVertexArray;
-	uint32_t CircleVertexBuffer;
+	VertexArray* CircleVertexArray;
+	VertexBuffer* CircleVertexBuffer;
 	std::vector<CircleVertex> CircleVertices;
 	Shader* CircleShader;
 
 	glm::vec4 UnitQuadVertices[4];
 
 	// stats
-	const uint32_t MaxQuadCount = 1000;
-	const uint32_t MaxVertexCount = MaxQuadCount * 4;
-	const uint32_t MaxIndexCount = MaxQuadCount * 6;
-
 	uint32_t QuadCount = 0;
 	uint32_t DrawCalls = 0;
+
+	const uint32_t MaxQuadCount = 5000;
+	const uint32_t MaxVertexCount = MaxQuadCount * 4;
+	const uint32_t MaxIndexCount = MaxQuadCount * 6;
 };
 
 static RenderData s_RenderData;
@@ -36,64 +39,17 @@ void Renderer::Init()
 {
 	// Quad initialisation
 	s_RenderData.QuadShader = new Shader("res/shaders/QuadShader.shader");
-
-	glGenVertexArrays(1, &s_RenderData.QuadVertexArray);
-	glBindVertexArray(s_RenderData.QuadVertexArray);
-
-	glGenBuffers(1, &s_RenderData.QuadVertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.QuadVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, s_RenderData.MaxVertexCount * sizeof(QuadVertex), nullptr, GL_DYNAMIC_DRAW);
-
-	uint32_t offset = offsetof(QuadVertex, Position);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
-
-	offset = offsetof(QuadVertex, Colour);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
-
-	offset = offsetof(QuadVertex, TexCoords);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
-
-	offset = offsetof(QuadVertex, TexIndex);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*) offset);
+	s_RenderData.QuadVertexArray = new VertexArray();
+	s_RenderData.QuadVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(QuadVertex));
+	s_RenderData.QuadVertexArray->SetLayout<QuadVertex>();
 
 	// Circle initialisation
 	s_RenderData.CircleShader = new Shader("res/shaders/CircleShader.shader");
-
-	glGenVertexArrays(1, &s_RenderData.CircleVertexArray);
-	glBindVertexArray(s_RenderData.CircleVertexArray);
-
-	glGenBuffers(1, &s_RenderData.CircleVertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.CircleVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, s_RenderData.MaxVertexCount * sizeof(CircleVertex), nullptr, GL_DYNAMIC_DRAW);
-
-	offset = offsetof(CircleVertex, Position);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
-
-	offset = offsetof(CircleVertex, LocalPosition);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
-
-	offset = offsetof(CircleVertex, Colour);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
-
-	offset = offsetof(CircleVertex, Thickness);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
-
-	offset = offsetof(CircleVertex, Fade);
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
+	s_RenderData.CircleVertexArray = new VertexArray();
+	s_RenderData.CircleVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(CircleVertex));
+	s_RenderData.CircleVertexArray->SetLayout<CircleVertex>();
 
 	// Index buffer initialisation
-	glGenBuffers(1, &s_RenderData.QuadIndexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_RenderData.QuadIndexBuffer);
-
 	std::vector<uint32_t> indices;
 	for (int i = 0; i < s_RenderData.MaxQuadCount; i++)
 	{
@@ -105,7 +61,7 @@ void Renderer::Init()
 		indices.push_back(0 + i * 4);
 	}
 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+	s_RenderData.QuadIndexBuffer = new IndexBuffer(indices.size(), indices.data());
 
 	s_RenderData.UnitQuadVertices[0] = { -0.5, -0.5, 0, 1 };
 	s_RenderData.UnitQuadVertices[1] = {  0.5, -0.5, 0, 1 };
@@ -113,7 +69,7 @@ void Renderer::Init()
 	s_RenderData.UnitQuadVertices[3] = { -0.5,  0.5, 0, 1 };
 }
 
-void Renderer::BatchStart()
+void Renderer::StartBatch()
 {
 	s_RenderData.QuadVertices.clear();
 	s_RenderData.QuadIndexCount = 0;
@@ -122,26 +78,19 @@ void Renderer::BatchStart()
 	s_RenderData.CircleIndexCount = 0;
 }
 
-void Renderer::BatchEnd()
-{
-	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.QuadVertexBuffer);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, s_RenderData.QuadVertices.size() * sizeof(QuadVertex), s_RenderData.QuadVertices.data());
-
-	glBindBuffer(GL_ARRAY_BUFFER, s_RenderData.CircleVertexBuffer);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, s_RenderData.CircleVertices.size() * sizeof(CircleVertex), s_RenderData.CircleVertices.data());
-}
-
 void Renderer::Flush()
 {
-	glBindVertexArray(s_RenderData.QuadVertexArray);
-	s_RenderData.QuadShader->Bind();
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_RenderData.QuadIndexBuffer);
-	glDrawElements(GL_TRIANGLES, s_RenderData.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
+	s_RenderData.QuadVertexBuffer->SetBuffer(s_RenderData.QuadVertices.size() * sizeof(QuadVertex), s_RenderData.QuadVertices.data());
+	s_RenderData.CircleVertexBuffer->SetBuffer(s_RenderData.CircleVertices.size() * sizeof(CircleVertex), s_RenderData.CircleVertices.data());
 
+	s_RenderData.QuadVertexArray->Bind();
+	s_RenderData.QuadShader->Bind();
+	s_RenderData.QuadIndexBuffer->Bind();
+	glDrawElements(GL_TRIANGLES, s_RenderData.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
 	
-	glBindVertexArray(s_RenderData.CircleVertexArray);
+	s_RenderData.CircleVertexArray->Bind();
 	s_RenderData.CircleShader->Bind();
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_RenderData.QuadIndexBuffer);
+	s_RenderData.QuadIndexBuffer->Bind();
 	glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
 
 	s_RenderData.DrawCalls += 2;
@@ -149,16 +98,15 @@ void Renderer::Flush()
 
 void Renderer::Shutdown()
 {
+	delete s_RenderData.QuadIndexBuffer;
+
+	delete s_RenderData.QuadVertexArray;
+	delete s_RenderData.QuadVertexBuffer;
 	delete s_RenderData.QuadShader;
+
+	delete s_RenderData.CircleVertexArray;
+	delete s_RenderData.CircleVertexBuffer;
 	delete s_RenderData.CircleShader;
-
-	glDeleteBuffers(1, &s_RenderData.QuadIndexBuffer);
-
-	glDeleteBuffers(1, &s_RenderData.QuadVertexBuffer);
-	glDeleteVertexArrays(1, &s_RenderData.QuadVertexArray);
-
-	glDeleteBuffers(1, &s_RenderData.CircleVertexBuffer);
-	glDeleteVertexArrays(1, &s_RenderData.CircleVertexArray);
 }
 
 void Renderer::Clear(glm::vec4 colour)
@@ -174,9 +122,8 @@ void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float
 {
 	if (s_RenderData.QuadVertices.size() == s_RenderData.MaxVertexCount)
 	{
-		BatchEnd();
 		Flush();
-		BatchStart();
+		StartBatch();
 	}
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::rotate(glm::mat4(1), rotation, { 0, 0, 1 }) * glm::scale(glm::mat4(1), dims);
@@ -227,9 +174,8 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 {
 	if (s_RenderData.CircleVertices.size() == s_RenderData.MaxVertexCount)
 	{
-		BatchEnd();
 		Flush();
-		BatchStart();
+		StartBatch();
 	}
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::scale(glm::mat4(1), dims);
