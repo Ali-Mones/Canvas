@@ -478,6 +478,7 @@
     </None>
     <None Include="res\shaders\QuadShader.shader" />
     <None Include="res\shaders\CircleShader.shader" />
+    <None Include="res\shaders\LineShader.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Shader.h">

@@ -22,10 +22,17 @@ struct RenderData
 	std::vector<CircleVertex> CircleVertices;
 	Shader* CircleShader;
 
+	uint32_t LineVertexCount = 0;
+	VertexArray* LineVertexArray;
+	VertexBuffer* LineVertexBuffer;
+	std::vector<LineVertex> LineVertices;
+	Shader* LineShader;
+
 	glm::vec4 UnitQuadVertices[4];
 
 	// stats
 	uint32_t QuadCount = 0;
+	uint32_t LineCount = 0;
 	uint32_t DrawCalls = 0;
 
 	const uint32_t MaxQuadCount = 5000;
@@ -48,6 +55,12 @@ void Renderer::Init()
 	s_RenderData.CircleVertexArray = new VertexArray();
 	s_RenderData.CircleVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(CircleVertex));
 	s_RenderData.CircleVertexArray->SetLayout<CircleVertex>();
+
+	// Line initialisation
+	s_RenderData.LineShader = new Shader("res/shaders/LineShader.shader");
+	s_RenderData.LineVertexArray = new VertexArray();
+	s_RenderData.LineVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(LineVertex));
+	s_RenderData.LineVertexArray->SetLayout<LineVertex>();
 
 	// Index buffer initialisation
 	std::vector<uint32_t> indices;
@@ -76,12 +89,16 @@ void Renderer::StartBatch()
 
 	s_RenderData.CircleVertices.clear();
 	s_RenderData.CircleIndexCount = 0;
+
+	s_RenderData.LineVertices.clear();
+	s_RenderData.LineVertexCount = 0;
 }
 
 void Renderer::Flush()
 {
 	s_RenderData.QuadVertexBuffer->SetBuffer(s_RenderData.QuadVertices.size() * sizeof(QuadVertex), s_RenderData.QuadVertices.data());
 	s_RenderData.CircleVertexBuffer->SetBuffer(s_RenderData.CircleVertices.size() * sizeof(CircleVertex), s_RenderData.CircleVertices.data());
+	s_RenderData.LineVertexBuffer->SetBuffer(s_RenderData.LineVertices.size() * sizeof(LineVertex), s_RenderData.LineVertices.data());
 
 	s_RenderData.QuadVertexArray->Bind();
 	s_RenderData.QuadShader->Bind();
@@ -93,7 +110,11 @@ void Renderer::Flush()
 	s_RenderData.QuadIndexBuffer->Bind();
 	glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
 
-	s_RenderData.DrawCalls += 2;
+	s_RenderData.LineVertexArray->Bind();
+	s_RenderData.LineShader->Bind();
+	glDrawArrays(GL_LINES, 0, s_RenderData.LineVertexCount);
+
+	s_RenderData.DrawCalls += 3;
 }
 
 void Renderer::Shutdown()
@@ -113,6 +134,7 @@ void Renderer::Clear(glm::vec4 colour)
 {
 	s_RenderData.DrawCalls = 0;
 	s_RenderData.QuadCount = 0;
+	s_RenderData.LineCount = 0;
 
 	glClearColor(colour.r, colour.g, colour.b, colour.a);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -226,6 +248,35 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 	s_RenderData.QuadCount++;
 }
 
+void Renderer::RenderLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight)
+{
+	if (s_RenderData.LineVertices.size() == s_RenderData.MaxVertexCount)
+	{
+		Flush();
+		StartBatch();
+	}
+
+	glLineWidth(weight);
+
+	LineVertex v1 =
+	{
+		glm::vec4(p1, 1.0f),
+		colour
+	};
+
+	LineVertex v2 =
+	{
+		glm::vec4(p2, 1.0f),
+		colour
+	};
+
+	s_RenderData.LineVertices.push_back(v1);
+	s_RenderData.LineVertices.push_back(v2);
+
+	s_RenderData.LineCount++;
+	s_RenderData.LineVertexCount += 2;
+}
+
 uint32_t Renderer::QuadCount()
 {
 	return s_RenderData.QuadCount;
@@ -244,4 +295,9 @@ Shader* Renderer::QuadShader()
 Shader* Renderer::CircleShader()
 {
 	return s_RenderData.CircleShader;
+}
+
+Shader* Renderer::LineShader()
+{
+	return s_RenderData.LineShader;
 }

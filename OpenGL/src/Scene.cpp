@@ -59,6 +59,9 @@ void Scene::OnRender()
 	for (auto& circle : m_Circles)
 		Renderer::RenderCircle(circle);
 
+	for (auto& line : m_Lines)
+		Renderer::RenderLine(line);
+
 	Renderer::Flush();
 }
 
@@ -87,4 +90,10 @@ void Scene::SubmitCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float 
 {
 	Circle c = { pos, dims, colour, thickness, fade };
 	m_Circles.push_back(c);
+}
+
+void Scene::SubmitLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight)
+{
+	Line l = { p1, p2, colour, weight };
+	m_Lines.push_back(l);
 }

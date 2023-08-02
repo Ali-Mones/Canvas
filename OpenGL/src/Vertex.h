@@ -17,3 +17,9 @@ struct CircleVertex
 	float Thickness;
 	float Fade;
 };
+
+struct LineVertex
+{
+	glm::vec4 Position;
+	glm::vec4 Colour;
+};

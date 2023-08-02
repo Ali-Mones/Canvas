@@ -58,6 +58,19 @@ void VertexArray::SetLayout<CircleVertex>()
 	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
 }
 
+template<>
+void VertexArray::SetLayout<LineVertex>()
+{
+	Bind();
+	uint32_t offset = offsetof(LineVertex, Position);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (const void*) offset);
+
+	offset = offsetof(LineVertex, Colour);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (const void*) offset);
+}
+
 void VertexArray::Bind()
 {
 	glBindVertexArray(m_RendererID);
