@@ -13,19 +13,22 @@ struct RenderData
 	uint32_t QuadIndexCount = 0;
 	VertexArray* QuadVertexArray;
 	VertexBuffer* QuadVertexBuffer;
-	std::vector<QuadVertex> QuadVertices;
+	QuadVertex* QuadVerticesBase;
+	QuadVertex* QuadVerticesCurr;
 	Shader* QuadShader;
 
 	uint32_t CircleIndexCount = 0;
 	VertexArray* CircleVertexArray;
 	VertexBuffer* CircleVertexBuffer;
-	std::vector<CircleVertex> CircleVertices;
+	CircleVertex* CircleVerticesBase;
+	CircleVertex* CircleVerticesCurr;
 	Shader* CircleShader;
 
 	uint32_t LineVertexCount = 0;
 	VertexArray* LineVertexArray;
 	VertexBuffer* LineVertexBuffer;
-	std::vector<LineVertex> LineVertices;
+	LineVertex* LineVerticesBase;
+	LineVertex* LineVerticesCurr;
 	Shader* LineShader;
 
 	glm::vec4 UnitQuadVertices[4];
@@ -49,18 +52,24 @@ void Renderer::Init()
 	s_RenderData.QuadVertexArray = new VertexArray();
 	s_RenderData.QuadVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(QuadVertex));
 	s_RenderData.QuadVertexArray->SetLayout<QuadVertex>();
+	s_RenderData.QuadVerticesBase = new QuadVertex[s_RenderData.MaxVertexCount];
+	s_RenderData.QuadVerticesCurr = s_RenderData.QuadVerticesBase;
 
 	// Circle initialisation
 	s_RenderData.CircleShader = new Shader("res/shaders/CircleShader.shader");
 	s_RenderData.CircleVertexArray = new VertexArray();
 	s_RenderData.CircleVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(CircleVertex));
 	s_RenderData.CircleVertexArray->SetLayout<CircleVertex>();
+	s_RenderData.CircleVerticesBase = new CircleVertex[s_RenderData.MaxVertexCount];
+	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 
 	// Line initialisation
 	s_RenderData.LineShader = new Shader("res/shaders/LineShader.shader");
 	s_RenderData.LineVertexArray = new VertexArray();
 	s_RenderData.LineVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(LineVertex));
 	s_RenderData.LineVertexArray->SetLayout<LineVertex>();
+	s_RenderData.LineVerticesBase = new LineVertex[s_RenderData.MaxVertexCount];
+	s_RenderData.LineVerticesCurr = s_RenderData.LineVerticesBase;
 
 	// Index buffer initialisation
 	std::vector<uint32_t> indices;
@@ -84,37 +93,49 @@ void Renderer::Init()
 
 void Renderer::StartBatch()
 {
-	s_RenderData.QuadVertices.clear();
+	s_RenderData.QuadVerticesCurr = s_RenderData.QuadVerticesBase;
 	s_RenderData.QuadIndexCount = 0;
 
-	s_RenderData.CircleVertices.clear();
+	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 	s_RenderData.CircleIndexCount = 0;
 
-	s_RenderData.LineVertices.clear();
+	s_RenderData.LineVerticesCurr = s_RenderData.LineVerticesBase;
 	s_RenderData.LineVertexCount = 0;
 }
 
 void Renderer::Flush()
 {
-	s_RenderData.QuadVertexBuffer->SetBuffer(s_RenderData.QuadVertices.size() * sizeof(QuadVertex), s_RenderData.QuadVertices.data());
-	s_RenderData.CircleVertexBuffer->SetBuffer(s_RenderData.CircleVertices.size() * sizeof(CircleVertex), s_RenderData.CircleVertices.data());
-	s_RenderData.LineVertexBuffer->SetBuffer(s_RenderData.LineVertices.size() * sizeof(LineVertex), s_RenderData.LineVertices.data());
+	if (s_RenderData.QuadVerticesBase != s_RenderData.QuadVerticesCurr)
+	{
+		uint32_t count = s_RenderData.QuadVerticesCurr - s_RenderData.QuadVerticesBase;
+		s_RenderData.QuadVertexBuffer->SetBuffer(count * sizeof(QuadVertex), s_RenderData.QuadVerticesBase);
+		s_RenderData.QuadVertexArray->Bind();
+		s_RenderData.QuadShader->Bind();
+		s_RenderData.QuadIndexBuffer->Bind();
+		glDrawElements(GL_TRIANGLES, s_RenderData.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
+		s_RenderData.DrawCalls++;
+	}
 
-	s_RenderData.QuadVertexArray->Bind();
-	s_RenderData.QuadShader->Bind();
-	s_RenderData.QuadIndexBuffer->Bind();
-	glDrawElements(GL_TRIANGLES, s_RenderData.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
-	
-	s_RenderData.CircleVertexArray->Bind();
-	s_RenderData.CircleShader->Bind();
-	s_RenderData.QuadIndexBuffer->Bind();
-	glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
+	if (s_RenderData.CircleVerticesBase != s_RenderData.CircleVerticesCurr)
+	{
+		uint32_t count = s_RenderData.CircleVerticesCurr - s_RenderData.CircleVerticesBase;
+		s_RenderData.CircleVertexBuffer->SetBuffer(count * sizeof(CircleVertex), s_RenderData.CircleVerticesBase);
+		s_RenderData.CircleVertexArray->Bind();
+		s_RenderData.CircleShader->Bind();
+		s_RenderData.QuadIndexBuffer->Bind();
+		glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
+		s_RenderData.DrawCalls++;
+	}
 
-	s_RenderData.LineVertexArray->Bind();
-	s_RenderData.LineShader->Bind();
-	glDrawArrays(GL_LINES, 0, s_RenderData.LineVertexCount);
-
-	s_RenderData.DrawCalls += 3;
+	if (s_RenderData.LineVerticesBase != s_RenderData.LineVerticesCurr)
+	{
+		uint32_t count = s_RenderData.LineVerticesCurr - s_RenderData.LineVerticesBase;
+		s_RenderData.LineVertexBuffer->SetBuffer(count * sizeof(LineVertex), s_RenderData.LineVerticesBase);
+		s_RenderData.LineVertexArray->Bind();
+		s_RenderData.LineShader->Bind();
+		glDrawArrays(GL_LINES, 0, s_RenderData.LineVertexCount);
+		s_RenderData.DrawCalls++;
+	}
 }
 
 void Renderer::Shutdown()
@@ -124,10 +145,17 @@ void Renderer::Shutdown()
 	delete s_RenderData.QuadVertexArray;
 	delete s_RenderData.QuadVertexBuffer;
 	delete s_RenderData.QuadShader;
+	delete s_RenderData.QuadVerticesBase;
 
 	delete s_RenderData.CircleVertexArray;
 	delete s_RenderData.CircleVertexBuffer;
 	delete s_RenderData.CircleShader;
+	delete s_RenderData.CircleVerticesBase;
+
+	delete s_RenderData.LineVertexArray;
+	delete s_RenderData.LineVertexBuffer;
+	delete s_RenderData.LineShader;
+	delete s_RenderData.LineVerticesBase;
 }
 
 void Renderer::Clear(glm::vec4 colour)
@@ -142,7 +170,8 @@ void Renderer::Clear(glm::vec4 colour)
 
 void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation)
 {
-	if (s_RenderData.QuadVertices.size() == s_RenderData.MaxVertexCount)
+	uint32_t vertexCount = s_RenderData.QuadVerticesCurr - s_RenderData.QuadVerticesBase;
+	if (vertexCount == s_RenderData.MaxVertexCount)
 	{
 		Flush();
 		StartBatch();
@@ -150,51 +179,39 @@ void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::rotate(glm::mat4(1), rotation, { 0, 0, 1 }) * glm::scale(glm::mat4(1), dims);
 
-	QuadVertex v1 =
-	{
-		transform * s_RenderData.UnitQuadVertices[0],
-		{ colour.r, colour.g, colour.b, colour.a },
-		{ 0, 0 },
-		1
-	};
+	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[0];
+	s_RenderData.QuadVerticesCurr->Colour = colour;
+	s_RenderData.QuadVerticesCurr->TexCoords = { 0, 0 };
+	s_RenderData.QuadVerticesCurr->TexIndex = 1;
+	s_RenderData.QuadVerticesCurr++;
 
-	QuadVertex v2 =
-	{
-		transform * s_RenderData.UnitQuadVertices[1],
-		{ colour.r, colour.g, colour.b, colour.a },
-		{ 1, 0 },
-		1
-	};
+	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[1];
+	s_RenderData.QuadVerticesCurr->Colour = colour;
+	s_RenderData.QuadVerticesCurr->TexCoords = { 1, 0 };
+	s_RenderData.QuadVerticesCurr->TexIndex = 1;
+	s_RenderData.QuadVerticesCurr++;
 
-	QuadVertex v3 =
-	{
-		transform * s_RenderData.UnitQuadVertices[2],
-		{ colour.r, colour.g, colour.b, colour.a },
-		{ 1, 1 },
-		1
-	};
+	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[2];
+	s_RenderData.QuadVerticesCurr->Colour = colour;
+	s_RenderData.QuadVerticesCurr->TexCoords = { 1, 1 };
+	s_RenderData.QuadVerticesCurr->TexIndex = 1;
+	s_RenderData.QuadVerticesCurr++;
 
-	QuadVertex v4 =
-	{
-		transform * s_RenderData.UnitQuadVertices[3],
-		{ colour.r, colour.g, colour.b, colour.a },
-		{ 0, 1 },
-		1
-	};
+	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[3];
+	s_RenderData.QuadVerticesCurr->Colour = colour;
+	s_RenderData.QuadVerticesCurr->TexCoords = { 0, 1 };
+	s_RenderData.QuadVerticesCurr->TexIndex = 1;
+	s_RenderData.QuadVerticesCurr++;
 
 	s_RenderData.QuadIndexCount += 6;
-	
-	s_RenderData.QuadVertices.push_back(v1);
-	s_RenderData.QuadVertices.push_back(v2);
-	s_RenderData.QuadVertices.push_back(v3);
-	s_RenderData.QuadVertices.push_back(v4);
 
 	s_RenderData.QuadCount++;
 }
 
 void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade)
 {
-	if (s_RenderData.CircleVertices.size() == s_RenderData.MaxVertexCount)
+	uint32_t vertexCount = s_RenderData.CircleVerticesCurr - s_RenderData.CircleVerticesBase;
+	if (vertexCount == s_RenderData.MaxVertexCount)
 	{
 		Flush();
 		StartBatch();
@@ -202,76 +219,57 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::scale(glm::mat4(1), dims);
 
-	CircleVertex v1 =
-	{
-		transform * s_RenderData.UnitQuadVertices[0],
-		s_RenderData.UnitQuadVertices[0] * 2.0f,
-		{ colour.r, colour.g, colour.b, colour.a },
-		thickness,
-		fade
-	};
+	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[0];
+	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[0] * 2.0f;
+	s_RenderData.CircleVerticesCurr->Colour = colour;
+	s_RenderData.CircleVerticesCurr->Thickness = thickness;
+	s_RenderData.CircleVerticesCurr->Fade = fade;
+	s_RenderData.CircleVerticesCurr++;
 
-	CircleVertex v2 =
-	{
-		transform * s_RenderData.UnitQuadVertices[1],
-		s_RenderData.UnitQuadVertices[1] * 2.0f,
-		{ colour.r, colour.g, colour.b, colour.a },
-		thickness,
-		fade
-	};
+	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[1];
+	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[1] * 2.0f;
+	s_RenderData.CircleVerticesCurr->Colour = colour;
+	s_RenderData.CircleVerticesCurr->Thickness = thickness;
+	s_RenderData.CircleVerticesCurr->Fade = fade;
+	s_RenderData.CircleVerticesCurr++;
 
-	CircleVertex v3 =
-	{
-		transform * s_RenderData.UnitQuadVertices[2],
-		s_RenderData.UnitQuadVertices[2] * 2.0f,
-		{ colour.r, colour.g, colour.b, colour.a },
-		thickness,
-		fade
-	};
+	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[2];
+	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[2] * 2.0f;
+	s_RenderData.CircleVerticesCurr->Colour = colour;
+	s_RenderData.CircleVerticesCurr->Thickness = thickness;
+	s_RenderData.CircleVerticesCurr->Fade = fade;
+	s_RenderData.CircleVerticesCurr++;
 
-	CircleVertex v4 =
-	{
-		transform * s_RenderData.UnitQuadVertices[3],
-		s_RenderData.UnitQuadVertices[3] * 2.0f,
-		{ colour.r, colour.g, colour.b, colour.a },
-		thickness,
-		fade
-	};
+	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[3];
+	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[3] * 2.0f;
+	s_RenderData.CircleVerticesCurr->Colour = colour;
+	s_RenderData.CircleVerticesCurr->Thickness = thickness;
+	s_RenderData.CircleVerticesCurr->Fade = fade;
+	s_RenderData.CircleVerticesCurr++;
 
 	s_RenderData.CircleIndexCount += 6;
-
-	s_RenderData.CircleVertices.push_back(v1);
-	s_RenderData.CircleVertices.push_back(v2);
-	s_RenderData.CircleVertices.push_back(v3);
-	s_RenderData.CircleVertices.push_back(v4);
 
 	s_RenderData.QuadCount++;
 }
 
 void Renderer::RenderLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight)
 {
-	if (s_RenderData.LineVertices.size() == s_RenderData.MaxVertexCount)
+	uint32_t vertexCount = s_RenderData.LineVerticesCurr - s_RenderData.LineVerticesBase;
+	if (vertexCount == s_RenderData.MaxVertexCount)
 	{
 		Flush();
 		StartBatch();
 	}
 
+	s_RenderData.LineVerticesCurr->Position = glm::vec4(p1, 1.0f);
+	s_RenderData.LineVerticesCurr->Colour = colour;
+	s_RenderData.LineVerticesCurr++;
+
+	s_RenderData.LineVerticesCurr->Position = glm::vec4(p2, 1.0f);
+	s_RenderData.LineVerticesCurr->Colour = colour;
+	s_RenderData.LineVerticesCurr++;
+
 	glLineWidth(weight);
-
-	LineVertex v1 =
-	{
-		glm::vec4(p1, 1.0f),
-		colour
-	};
-
-	LineVertex v2 =
-	{
-		glm::vec4(p2, 1.0f),
-		colour
-	};
-
-	s_RenderData.LineVertices.push_back(v1);
-	s_RenderData.LineVertices.push_back(v2);
 
 	s_RenderData.LineCount++;
 	s_RenderData.LineVertexCount += 2;
