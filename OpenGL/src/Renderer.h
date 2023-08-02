@@ -14,10 +14,10 @@ public:
 
 	static void Clear(glm::vec4 colour);
 
-	static void RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation);
+	static void RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke = 0.0f);
 	static void RenderQuad(Quad quad) { RenderQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation); };
 
-	static void RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade);
+	static void RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade, float stroke = 0.0f);
 	static void RenderCircle(Circle circle) { RenderCircle(circle.Position, circle.Dimensions, circle.Colour, circle.Thickness, circle.Fade); }
 
 	static void RenderLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight);

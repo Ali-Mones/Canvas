@@ -11,7 +11,7 @@ public:
 	bool MouseInput(int button);
 	void OnUpdate();
 	void SubmitQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation = 0.0f);
-	void SubmitCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness = 1.0f, float fade = 0.01f);
+	void SubmitCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness = 1.0f, float fade = 0.02f);
 	void SubmitLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight);
 private:
 	void OnInputUpdate();

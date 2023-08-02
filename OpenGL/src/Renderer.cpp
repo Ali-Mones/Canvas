@@ -33,7 +33,7 @@ struct RenderData
 
 	glm::vec4 UnitQuadVertices[4];
 
-	// stats
+	/* Statistics */
 	uint32_t QuadCount = 0;
 	uint32_t LineCount = 0;
 	uint32_t DrawCalls = 0;
@@ -168,7 +168,7 @@ void Renderer::Clear(glm::vec4 colour)
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation)
+void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke)
 {
 	uint32_t vertexCount = s_RenderData.QuadVerticesCurr - s_RenderData.QuadVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
@@ -176,6 +176,9 @@ void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float
 		Flush();
 		StartBatch();
 	}
+
+	if (stroke != 0.0f)
+		RenderQuad(glm::vec3(pos.x, pos.y, 0), glm::vec3(dims.x + stroke, dims.y + stroke, 0), glm::vec4(1), rotation);
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::rotate(glm::mat4(1), rotation, { 0, 0, 1 }) * glm::scale(glm::mat4(1), dims);
 
@@ -208,7 +211,7 @@ void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float
 	s_RenderData.QuadCount++;
 }
 
-void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade)
+void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade, float stroke)
 {
 	uint32_t vertexCount = s_RenderData.CircleVerticesCurr - s_RenderData.CircleVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
@@ -216,6 +219,9 @@ void Renderer::RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, flo
 		Flush();
 		StartBatch();
 	}
+
+	if (stroke != 0.0f)
+		RenderCircle(pos, glm::vec3(dims.x + stroke, dims.y + stroke, 0), glm::vec4(1), 1, fade);
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::scale(glm::mat4(1), dims);
 

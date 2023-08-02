@@ -27,16 +27,16 @@ void Scene::OnUpdate()
 void Scene::OnInputUpdate()
 {
 	if (KeyboardInput(GLFW_KEY_LEFT))
-		m_Circles[0].Position.x -= 10;
+		m_Quads[0].Position.x -= 10;
 
 	if (KeyboardInput(GLFW_KEY_RIGHT))
-		m_Circles[0].Position.x += 10;
+		m_Quads[0].Position.x += 10;
 
 	if (KeyboardInput(GLFW_KEY_UP))
-		m_Circles[0].Position.y += 10;
+		m_Quads[0].Position.y += 10;
 
 	if (KeyboardInput(GLFW_KEY_DOWN))
-		m_Circles[0].Position.y -= 10;
+		m_Quads[0].Position.y -= 10;
 
 	if (MouseInput(GLFW_MOUSE_BUTTON_LEFT))
 	{
@@ -54,10 +54,10 @@ void Scene::OnRender()
 	Renderer::StartBatch();
 
 	for (auto& quad : m_Quads)
-		Renderer::RenderQuad(quad);
+		Renderer::RenderQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation, 10.0f);
 
 	for (auto& circle : m_Circles)
-		Renderer::RenderCircle(circle);
+		Renderer::RenderCircle(circle.Position, circle.Dimensions, circle.Colour, circle.Thickness, circle.Fade, 10.0f);
 
 	for (auto& line : m_Lines)
 		Renderer::RenderLine(line);

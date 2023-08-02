@@ -103,9 +103,9 @@ int main(void)
     Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);
 
     Scene* scene = new Scene(window);
-    scene->SubmitQuad({ 400, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
-    scene->SubmitQuad({ 600, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
-    scene->SubmitCircle({ 900, 300, 0 }, { 200, 100, 0 }, { 1, 1, 0, 1 }, 0.2f);
+    scene->SubmitQuad({ 400, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 }, 1.0f);
+    //scene->SubmitQuad({ 600, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
+    scene->SubmitCircle({ 900, 300, 0 }, { 200, 200, 0 }, { 1, 1, 0, 1 });
     scene->SubmitLine({ 100, 300, 0 }, { 900, 300, 0 }, { 1, 1, 0, 1 }, 2.0f);
 
     /* Loop until the user closes the window */
