@@ -31,11 +31,11 @@ in vec4 v_Colour;
 in vec2 v_TexCoords;
 in float v_TexIndex;
 
-//uniform sampler2D u_Textures[2];
+uniform sampler2D u_Texture;
 
 void main()
 {
 	//int TexIndex = int(v_TextureIndex);
-	//colour = texture(u_Textures[TexIndex], v_TexCoords);
+	//o_Colour = v_Colour * texture(u_Texture, v_TexCoords);
 	o_Colour = v_Colour;
 }

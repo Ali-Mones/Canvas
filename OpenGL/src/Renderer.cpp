@@ -38,7 +38,7 @@ struct RenderData
 	uint32_t LineCount = 0;
 	uint32_t DrawCalls = 0;
 
-	const uint32_t MaxQuadCount = 5000;
+	const uint32_t MaxQuadCount = 500;
 	const uint32_t MaxVertexCount = MaxQuadCount * 4;
 	const uint32_t MaxIndexCount = MaxQuadCount * 6;
 };
@@ -85,10 +85,10 @@ void Renderer::Init()
 
 	s_RenderData.QuadIndexBuffer = new IndexBuffer(indices.size(), indices.data());
 
-	s_RenderData.UnitQuadVertices[0] = { -0.5, -0.5, 0, 1 };
-	s_RenderData.UnitQuadVertices[1] = {  0.5, -0.5, 0, 1 };
-	s_RenderData.UnitQuadVertices[2] = {  0.5,  0.5, 0, 1 };
-	s_RenderData.UnitQuadVertices[3] = { -0.5,  0.5, 0, 1 };
+	s_RenderData.UnitQuadVertices[0] = glm::vec4(-0.5, -0.5, 0, 1);
+	s_RenderData.UnitQuadVertices[1] = glm::vec4( 0.5, -0.5, 0, 1);
+	s_RenderData.UnitQuadVertices[2] = glm::vec4( 0.5,  0.5, 0, 1);
+	s_RenderData.UnitQuadVertices[3] = glm::vec4(-0.5,  0.5, 0, 1);
 }
 
 void Renderer::StartBatch()
@@ -165,7 +165,7 @@ void Renderer::Clear(glm::vec4 colour)
 	s_RenderData.LineCount = 0;
 
 	glClearColor(colour.r, colour.g, colour.b, colour.a);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke)
@@ -184,25 +184,25 @@ void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float
 
 	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[0];
 	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = { 0, 0 };
+	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(0, 0);
 	s_RenderData.QuadVerticesCurr->TexIndex = 1;
 	s_RenderData.QuadVerticesCurr++;
 
 	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[1];
 	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = { 1, 0 };
+	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(1, 0);
 	s_RenderData.QuadVerticesCurr->TexIndex = 1;
 	s_RenderData.QuadVerticesCurr++;
 
 	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[2];
 	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = { 1, 1 };
+	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(1, 1);
 	s_RenderData.QuadVerticesCurr->TexIndex = 1;
 	s_RenderData.QuadVerticesCurr++;
 
 	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[3];
 	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = { 0, 1 };
+	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(0, 1);
 	s_RenderData.QuadVerticesCurr->TexIndex = 1;
 	s_RenderData.QuadVerticesCurr++;
 

@@ -32,6 +32,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
     /* Create a windowed mode window and its OpenGL context */
     GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Open GL", NULL, NULL);
@@ -63,7 +64,7 @@ int main(void)
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
     // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
     // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.   
     // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
@@ -78,6 +79,10 @@ int main(void)
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_MULTISAMPLE);
 
     if (glewInit() != GLEW_OK)
     {
@@ -97,14 +102,11 @@ int main(void)
 
     Renderer::Init();
 
-    glm::mat4 vp = proj * view;
-    Renderer::QuadShader()->SetUniformMat4f("u_ViewProjection", vp);
-    Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
-    Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);
+    Renderer::QuadShader()->SetUniform1i("u_Texture", 0);
 
     Scene* scene = new Scene(window);
-    scene->SubmitQuad({ 400, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 }, 1.0f);
-    //scene->SubmitQuad({ 600, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
+    scene->SubmitQuad({ 400, 200, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 }, 1.0f);
+    scene->SubmitQuad({ 600, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
     scene->SubmitCircle({ 900, 300, 0 }, { 200, 200, 0 }, { 1, 1, 0, 1 });
     scene->SubmitLine({ 100, 300, 0 }, { 900, 300, 0 }, { 1, 1, 0, 1 }, 2.0f);
 
@@ -126,11 +128,12 @@ int main(void)
             windowWidth = width;
             windowHeight = height;
             proj = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight), -1.0f, 1.0f);
-            vp = proj * view;
-            Renderer::QuadShader()->SetUniformMat4f("u_ViewProjection", vp);
-            Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
-            Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);
         }
+
+        glm::mat4 vp = proj * scene->View();
+        Renderer::QuadShader()->SetUniformMat4f("u_ViewProjection", vp);
+        Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
+        Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

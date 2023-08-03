@@ -27,16 +27,28 @@ void Scene::OnUpdate()
 void Scene::OnInputUpdate()
 {
 	if (KeyboardInput(GLFW_KEY_LEFT))
-		m_Quads[0].Position.x -= 10;
+		m_Camera.MoveLeft();
 
 	if (KeyboardInput(GLFW_KEY_RIGHT))
-		m_Quads[0].Position.x += 10;
+		m_Camera.MoveRight();
 
 	if (KeyboardInput(GLFW_KEY_UP))
-		m_Quads[0].Position.y += 10;
+		m_Camera.MoveUp();
 
 	if (KeyboardInput(GLFW_KEY_DOWN))
+		m_Camera.MoveDown();
+
+	if (KeyboardInput(GLFW_KEY_A))
+		m_Quads[0].Position.x -= 10;
+
+	if (KeyboardInput(GLFW_KEY_D))
+		m_Quads[0].Position.x += 10;
+
+	if (KeyboardInput(GLFW_KEY_S))
 		m_Quads[0].Position.y -= 10;
+
+	if (KeyboardInput(GLFW_KEY_W))
+		m_Quads[0].Position.y += 10;
 
 	if (MouseInput(GLFW_MOUSE_BUTTON_LEFT))
 	{
@@ -44,7 +56,7 @@ void Scene::OnInputUpdate()
 		int width, height;
 		glfwGetWindowSize(m_Window, &width, &height);
 		glfwGetCursorPos(m_Window, &xpos, &ypos);
-		SubmitQuad({ (float) xpos, (float) height - ypos, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 });
+		SubmitQuad({ (float) -m_Camera.Left() + xpos, (float) -m_Camera.Bottom() + height - ypos, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 });
 	}
 }
 

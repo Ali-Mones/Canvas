@@ -1,5 +1,6 @@
 #pragma once
 #include "Shape.h"
+#include "Camera.h"
 #include <vector>
 #include <glfw3.h>
 
@@ -13,12 +14,14 @@ public:
 	void SubmitQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation = 0.0f);
 	void SubmitCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness = 1.0f, float fade = 0.02f);
 	void SubmitLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight);
+	glm::mat4 View() { return m_Camera.View(); }
 private:
 	void OnInputUpdate();
 	void OnRender();
 	void OnImGuiRender();
 private:
 	GLFWwindow* m_Window;
+	Camera m_Camera;
 	std::vector<Quad> m_Quads;
 	std::vector<Circle> m_Circles;
 	std::vector<Line> m_Lines;
