@@ -3,7 +3,7 @@
 #include <imgui/imgui.h>
 
 Scene::Scene(GLFWwindow* window)
-	: m_Window(window)
+	: m_Window(window), m_Camera(1280, 720)
 {
 }
 
@@ -50,13 +50,22 @@ void Scene::OnInputUpdate()
 	if (KeyboardInput(GLFW_KEY_W))
 		m_Rects[0].y += 10;
 
+	if (KeyboardInput(GLFW_KEY_Q))
+		m_Camera.ZoomOut();
+
+	if (KeyboardInput(GLFW_KEY_E))
+		m_Camera.ZoomIn();
+
 	if (MouseInput(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		double xpos, ypos;
 		int width, height;
 		glfwGetWindowSize(m_Window, &width, &height);
 		glfwGetCursorPos(m_Window, &xpos, &ypos);
-		SubmitRect(xpos + m_Camera.Left(), height - ypos + m_Camera.Bottom(), 100, 100, glm::vec4(255, 0, 0, 255));
+
+		glm::vec2 center = m_Camera.Center();
+
+		SubmitRect(-center.x + xpos, center.y + height - ypos, 100, 100, glm::vec4(255, 0, 0, 255));
 	}
 }
 

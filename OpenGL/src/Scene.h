@@ -14,7 +14,11 @@ public:
 	void SubmitRect(int x, int y, int w, int h, glm::vec4 colour);
 	void SubmitCircle(int x, int y, int w, int h, glm::vec4 colour);
 	void SubmitLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight);
-	glm::mat4 View() { return m_Camera.View(); }
+
+	void SetProjection(float left, float right, float bottom, float top) { m_Camera.SetProjection(left, right, bottom, top); }
+
+	const glm::mat4& View() const { return m_Camera.View(); }
+	const glm::mat4& ViewProjection() const { return m_Camera.ViewProjection(); }
 private:
 	void OnInputUpdate();
 	void OnRender();

@@ -21,8 +21,6 @@
 static uint32_t windowWidth = 1280;
 static uint32_t windowHeight = 720;
 
-static glm::mat4 proj = glm::ortho(0.0f, (float) windowWidth, 0.0f, (float) windowHeight, -1.0f, 1.0f);
-
 int main(void)
 {
     /* Initialize the library */
@@ -92,8 +90,8 @@ int main(void)
 
     std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
 
-    proj = glm::ortho(0.0f, (float) windowWidth, 0.0f, (float) windowHeight, -1.0f, 1.0f);
-    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+    float aspectRatio = (float)windowWidth / windowHeight;
+    float d = 200.0f;
 
     Texture texture("res/textures/heart.png");
     texture.Bind();
@@ -107,7 +105,7 @@ int main(void)
     Scene* scene = new Scene(window);
     //scene->SubmitQuad({ 400, 200, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 }, 1.0f);
     //scene->SubmitQuad({ 600, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
-    //scene->SubmitCircle({ 900, 300, 0 }, { 200, 200, 0 }, { 1, 1, 0, 1 });
+    scene->SubmitCircle(900, 300, 200, 200, { 255, 255, 0, 255 });
     //scene->SubmitLine({ 100, 300, 0 }, { 900, 300, 0 }, { 1, 1, 0, 1 }, 2.0f);
 
     /* Loop until the user closes the window */
@@ -118,7 +116,7 @@ int main(void)
         ImGui::NewFrame();
 
         scene->OnUpdate();
-          
+
         /* Window resizing */
         int width, height;
         glfwGetWindowSize(window, &width, &height);
@@ -127,10 +125,12 @@ int main(void)
             glViewport(0, 0, width, height);
             windowWidth = width;
             windowHeight = height;
-            proj = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight), -1.0f, 1.0f);
+            //scene->SetProjection()
+            //proj = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight), -1.0f, 1.0f);
         }
 
-        glm::mat4 vp = proj * scene->View();
+        glm::mat4 vp = scene->ViewProjection();
+
         Renderer::RectShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);

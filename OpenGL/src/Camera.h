@@ -6,19 +6,34 @@
 class Camera
 {
 public:
+	Camera(float windowWidth, float windowHeight);
 	void MoveLeft();
 	void MoveRight();
 	void MoveUp();
 	void MoveDown();
 
+	void ZoomIn();
+	void ZoomOut();
+
 	int Left() { return -m_Transform.x; }
 	int Bottom() { return -m_Transform.y; }
 
-	glm::mat4 View() { return m_View; }
+	void SetProjection(float left, float right, float bottom, float top) { m_Projection = glm::ortho(left, right, bottom, top, -1.0f, 1.0f); }
+
+	const glm::mat4& View() const { return m_View; }
+	const glm::mat4& Projection() const { return m_Projection; }
+	const glm::mat4& ViewProjection() const { return m_ViewProjection; }
 private:
 	void RecalculateView();
+	void RecalculateProjection();
 private:
-	glm::vec3 m_Transform = glm::vec3(0);
-	glm::mat4 m_View = glm::translate(glm::mat4(1.0f), m_Transform);
+	float m_AspectRatio;
+	float m_ZoomSpeed = 1.0f;
+	float m_Left, m_Right, m_Bottom, m_Top;
+
+	glm::vec3 m_Transform;
+	glm::mat4 m_View;
+	glm::mat4 m_Projection;
+	glm::mat4 m_ViewProjection;
 };
 
