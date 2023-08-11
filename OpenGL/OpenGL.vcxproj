@@ -153,9 +153,10 @@
     <ClCompile Include="src\VertexArray.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\CircleShader.shader" />
-    <None Include="res\shaders\LineShader.shader" />
-    <None Include="res\shaders\QuadShader.shader" />
+    <None Include="res\shaders\Circle.shader" />
+    <None Include="res\shaders\HollowQuad.shader" />
+    <None Include="res\shaders\Line.shader" />
+    <None Include="res\shaders\Quad.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />

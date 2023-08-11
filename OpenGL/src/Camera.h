@@ -11,8 +11,8 @@ public:
 	void MoveUp();
 	void MoveDown();
 
-	int Left() { return m_Transform.x; }
-	int Bottom() { return m_Transform.y; }
+	int Left() { return -m_Transform.x; }
+	int Bottom() { return -m_Transform.y; }
 
 	glm::mat4 View() { return m_View; }
 private:

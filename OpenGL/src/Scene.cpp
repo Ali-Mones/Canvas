@@ -56,7 +56,7 @@ void Scene::OnInputUpdate()
 		int width, height;
 		glfwGetWindowSize(m_Window, &width, &height);
 		glfwGetCursorPos(m_Window, &xpos, &ypos);
-		SubmitQuad({ (float) -m_Camera.Left() + xpos, (float) -m_Camera.Bottom() + height - ypos, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 });
+		SubmitQuad({ (float) m_Camera.Left() + xpos, (float) m_Camera.Bottom() + height - ypos, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 });
 	}
 }
 
@@ -66,13 +66,15 @@ void Scene::OnRender()
 	Renderer::StartBatch();
 
 	for (auto& quad : m_Quads)
-		Renderer::RenderQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation, 10.0f);
+		Renderer::RenderFilledQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation, 10.0f);
 
 	for (auto& circle : m_Circles)
 		Renderer::RenderCircle(circle.Position, circle.Dimensions, circle.Colour, circle.Thickness, circle.Fade, 10.0f);
 
 	for (auto& line : m_Lines)
 		Renderer::RenderLine(line);
+
+	Renderer::RenderHollowQuad(glm::vec3(0, 0, 0), glm::vec3(100, 100, 0), glm::vec4(0.5), 0.1);
 
 	Renderer::Flush();
 }

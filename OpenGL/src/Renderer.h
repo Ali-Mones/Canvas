@@ -14,8 +14,10 @@ public:
 
 	static void Clear(glm::vec4 colour);
 
-	static void RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke = 0.0f);
-	static void RenderQuad(Quad quad) { RenderQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation); };
+	static void RenderFilledQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke = 0.0f);
+	static void RenderFilledQuad(Quad quad) { RenderFilledQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation); };
+
+	static void RenderHollowQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thicknes);
 
 	static void RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade, float stroke = 0.0f);
 	static void RenderCircle(Circle circle) { RenderCircle(circle.Position, circle.Dimensions, circle.Colour, circle.Thickness, circle.Fade); }
@@ -25,7 +27,8 @@ public:
 
 	static uint32_t QuadCount();
 	static uint32_t DrawCalls();
-	static Shader* QuadShader();
+	static Shader* FilledQuadShader();
+	static Shader* HollowQuadShader();
 	static Shader* CircleShader();
 	static Shader* LineShader();
 };

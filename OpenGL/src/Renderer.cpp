@@ -10,12 +10,19 @@ struct RenderData
 {
 	IndexBuffer* QuadIndexBuffer;
 
-	uint32_t QuadIndexCount = 0;
-	VertexArray* QuadVertexArray;
-	VertexBuffer* QuadVertexBuffer;
-	QuadVertex* QuadVerticesBase;
-	QuadVertex* QuadVerticesCurr;
-	Shader* QuadShader;
+	uint32_t FilledQuadIndexCount = 0;
+	VertexArray* FilledQuadVertexArray;
+	VertexBuffer* FilledQuadVertexBuffer;
+	FilledQuadVertex* FilledQuadVerticesBase;
+	FilledQuadVertex* FilledQuadVerticesCurr;
+	Shader* FilledQuadShader;
+
+	uint32_t HollowQuadIndexCount = 0;
+	VertexArray* HollowQuadVertexArray;
+	VertexBuffer* HollowQuadVertexBuffer;
+	HollowQuadVertex* HollowQuadVerticesBase;
+	HollowQuadVertex* HollowQuadVerticesCurr;
+	Shader* HollowQuadShader;
 
 	uint32_t CircleIndexCount = 0;
 	VertexArray* CircleVertexArray;
@@ -47,16 +54,24 @@ static RenderData s_RenderData;
 
 void Renderer::Init()
 {
-	// Quad initialisation
-	s_RenderData.QuadShader = new Shader("res/shaders/QuadShader.shader");
-	s_RenderData.QuadVertexArray = new VertexArray();
-	s_RenderData.QuadVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(QuadVertex));
-	s_RenderData.QuadVertexArray->SetLayout<QuadVertex>();
-	s_RenderData.QuadVerticesBase = new QuadVertex[s_RenderData.MaxVertexCount];
-	s_RenderData.QuadVerticesCurr = s_RenderData.QuadVerticesBase;
+	// Filled Quad initialisation
+	s_RenderData.FilledQuadShader = new Shader("res/shaders/Quad.shader");
+	s_RenderData.FilledQuadVertexArray = new VertexArray();
+	s_RenderData.FilledQuadVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(FilledQuadVertex));
+	s_RenderData.FilledQuadVertexArray->SetLayout<FilledQuadVertex>();
+	s_RenderData.FilledQuadVerticesBase = new FilledQuadVertex[s_RenderData.MaxVertexCount];
+	s_RenderData.FilledQuadVerticesCurr = s_RenderData.FilledQuadVerticesBase;
+
+	// Hollow Quad initialisation
+	s_RenderData.HollowQuadShader = new Shader("res/shaders/HollowQuad.shader");
+	s_RenderData.HollowQuadVertexArray = new VertexArray();
+	s_RenderData.HollowQuadVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(HollowQuadVertex));
+	s_RenderData.HollowQuadVertexArray->SetLayout<HollowQuadVertex>();
+	s_RenderData.HollowQuadVerticesBase = new HollowQuadVertex[s_RenderData.MaxVertexCount];
+	s_RenderData.HollowQuadVerticesCurr = s_RenderData.HollowQuadVerticesBase;
 
 	// Circle initialisation
-	s_RenderData.CircleShader = new Shader("res/shaders/CircleShader.shader");
+	s_RenderData.CircleShader = new Shader("res/shaders/Circle.shader");
 	s_RenderData.CircleVertexArray = new VertexArray();
 	s_RenderData.CircleVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(CircleVertex));
 	s_RenderData.CircleVertexArray->SetLayout<CircleVertex>();
@@ -64,7 +79,7 @@ void Renderer::Init()
 	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 
 	// Line initialisation
-	s_RenderData.LineShader = new Shader("res/shaders/LineShader.shader");
+	s_RenderData.LineShader = new Shader("res/shaders/Line.shader");
 	s_RenderData.LineVertexArray = new VertexArray();
 	s_RenderData.LineVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(LineVertex));
 	s_RenderData.LineVertexArray->SetLayout<LineVertex>();
@@ -93,8 +108,11 @@ void Renderer::Init()
 
 void Renderer::StartBatch()
 {
-	s_RenderData.QuadVerticesCurr = s_RenderData.QuadVerticesBase;
-	s_RenderData.QuadIndexCount = 0;
+	s_RenderData.FilledQuadVerticesCurr = s_RenderData.FilledQuadVerticesBase;
+	s_RenderData.FilledQuadIndexCount = 0;
+
+	s_RenderData.HollowQuadVerticesCurr = s_RenderData.HollowQuadVerticesBase;
+	s_RenderData.HollowQuadIndexCount = 0;
 
 	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 	s_RenderData.CircleIndexCount = 0;
@@ -105,14 +123,25 @@ void Renderer::StartBatch()
 
 void Renderer::Flush()
 {
-	if (s_RenderData.QuadVerticesBase != s_RenderData.QuadVerticesCurr)
+	if (s_RenderData.FilledQuadVerticesBase != s_RenderData.FilledQuadVerticesCurr)
 	{
-		uint32_t count = s_RenderData.QuadVerticesCurr - s_RenderData.QuadVerticesBase;
-		s_RenderData.QuadVertexBuffer->SetBuffer(count * sizeof(QuadVertex), s_RenderData.QuadVerticesBase);
-		s_RenderData.QuadVertexArray->Bind();
-		s_RenderData.QuadShader->Bind();
+		uint32_t count = s_RenderData.FilledQuadVerticesCurr - s_RenderData.FilledQuadVerticesBase;
+		s_RenderData.FilledQuadVertexBuffer->SetBuffer(count * sizeof(FilledQuadVertex), s_RenderData.FilledQuadVerticesBase);
+		s_RenderData.FilledQuadVertexArray->Bind();
+		s_RenderData.FilledQuadShader->Bind();
 		s_RenderData.QuadIndexBuffer->Bind();
-		glDrawElements(GL_TRIANGLES, s_RenderData.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, s_RenderData.FilledQuadIndexCount, GL_UNSIGNED_INT, nullptr);
+		s_RenderData.DrawCalls++;
+	}
+
+	if (s_RenderData.HollowQuadVerticesBase != s_RenderData.HollowQuadVerticesCurr)
+	{
+		uint32_t count = s_RenderData.HollowQuadVerticesCurr - s_RenderData.HollowQuadVerticesBase;
+		s_RenderData.HollowQuadVertexBuffer->SetBuffer(count * sizeof(HollowQuadVertex), s_RenderData.HollowQuadVerticesBase);
+		s_RenderData.HollowQuadVertexArray->Bind();
+		s_RenderData.HollowQuadShader->Bind();
+		s_RenderData.QuadIndexBuffer->Bind();
+		glDrawElements(GL_TRIANGLES, s_RenderData.HollowQuadIndexCount, GL_UNSIGNED_INT, nullptr);
 		s_RenderData.DrawCalls++;
 	}
 
@@ -142,10 +171,15 @@ void Renderer::Shutdown()
 {
 	delete s_RenderData.QuadIndexBuffer;
 
-	delete s_RenderData.QuadVertexArray;
-	delete s_RenderData.QuadVertexBuffer;
-	delete s_RenderData.QuadShader;
-	delete s_RenderData.QuadVerticesBase;
+	delete s_RenderData.FilledQuadVertexArray;
+	delete s_RenderData.FilledQuadVertexBuffer;
+	delete s_RenderData.FilledQuadShader;
+	delete s_RenderData.FilledQuadVerticesBase;
+
+	delete s_RenderData.HollowQuadVertexArray;
+	delete s_RenderData.HollowQuadVertexBuffer;
+	delete s_RenderData.HollowQuadShader;
+	delete s_RenderData.HollowQuadVerticesBase;
 
 	delete s_RenderData.CircleVertexArray;
 	delete s_RenderData.CircleVertexBuffer;
@@ -168,9 +202,9 @@ void Renderer::Clear(glm::vec4 colour)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke)
+void Renderer::RenderFilledQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke)
 {
-	uint32_t vertexCount = s_RenderData.QuadVerticesCurr - s_RenderData.QuadVerticesBase;
+	uint32_t vertexCount = s_RenderData.FilledQuadVerticesCurr - s_RenderData.FilledQuadVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
 	{
 		Flush();
@@ -178,35 +212,75 @@ void Renderer::RenderQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float
 	}
 
 	if (stroke != 0.0f)
-		RenderQuad(glm::vec3(pos.x, pos.y, 0), glm::vec3(dims.x + stroke, dims.y + stroke, 0), glm::vec4(1), rotation);
+		RenderFilledQuad(glm::vec3(pos.x, pos.y, 0), glm::vec3(dims.x + stroke, dims.y + stroke, 0), glm::vec4(1), rotation);
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::rotate(glm::mat4(1), rotation, { 0, 0, 1 }) * glm::scale(glm::mat4(1), dims);
 
-	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[0];
-	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(0, 0);
-	s_RenderData.QuadVerticesCurr->TexIndex = 1;
-	s_RenderData.QuadVerticesCurr++;
+	s_RenderData.FilledQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[0];
+	s_RenderData.FilledQuadVerticesCurr->Colour = colour;
+	s_RenderData.FilledQuadVerticesCurr->TexCoords = glm::vec2(0, 0);
+	s_RenderData.FilledQuadVerticesCurr->TexIndex = 1;
+	s_RenderData.FilledQuadVerticesCurr++;
 
-	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[1];
-	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(1, 0);
-	s_RenderData.QuadVerticesCurr->TexIndex = 1;
-	s_RenderData.QuadVerticesCurr++;
+	s_RenderData.FilledQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[1];
+	s_RenderData.FilledQuadVerticesCurr->Colour = colour;
+	s_RenderData.FilledQuadVerticesCurr->TexCoords = glm::vec2(1, 0);
+	s_RenderData.FilledQuadVerticesCurr->TexIndex = 1;
+	s_RenderData.FilledQuadVerticesCurr++;
 
-	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[2];
-	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(1, 1);
-	s_RenderData.QuadVerticesCurr->TexIndex = 1;
-	s_RenderData.QuadVerticesCurr++;
+	s_RenderData.FilledQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[2];
+	s_RenderData.FilledQuadVerticesCurr->Colour = colour;
+	s_RenderData.FilledQuadVerticesCurr->TexCoords = glm::vec2(1, 1);
+	s_RenderData.FilledQuadVerticesCurr->TexIndex = 1;
+	s_RenderData.FilledQuadVerticesCurr++;
 
-	s_RenderData.QuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[3];
-	s_RenderData.QuadVerticesCurr->Colour = colour;
-	s_RenderData.QuadVerticesCurr->TexCoords = glm::vec2(0, 1);
-	s_RenderData.QuadVerticesCurr->TexIndex = 1;
-	s_RenderData.QuadVerticesCurr++;
+	s_RenderData.FilledQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[3];
+	s_RenderData.FilledQuadVerticesCurr->Colour = colour;
+	s_RenderData.FilledQuadVerticesCurr->TexCoords = glm::vec2(0, 1);
+	s_RenderData.FilledQuadVerticesCurr->TexIndex = 1;
+	s_RenderData.FilledQuadVerticesCurr++;
 
-	s_RenderData.QuadIndexCount += 6;
+	s_RenderData.FilledQuadIndexCount += 6;
+
+	s_RenderData.QuadCount++;
+}
+
+void Renderer::RenderHollowQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness)
+{
+	uint32_t vertexCount = s_RenderData.HollowQuadVerticesCurr - s_RenderData.HollowQuadVerticesBase;
+	if (vertexCount == s_RenderData.MaxVertexCount)
+	{
+		Flush();
+		StartBatch();
+	}
+
+	glm::mat4 transform = glm::translate(glm::mat4(1), pos) * glm::rotate(glm::mat4(1), 0.0f, { 0, 0, 1 }) * glm::scale(glm::mat4(1), dims);
+
+	s_RenderData.HollowQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[0];
+	s_RenderData.HollowQuadVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[0] * 2.0f;
+	s_RenderData.HollowQuadVerticesCurr->Colour = colour;
+	s_RenderData.HollowQuadVerticesCurr->Thickness = thickness;
+	s_RenderData.HollowQuadVerticesCurr++;
+
+	s_RenderData.HollowQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[1];
+	s_RenderData.HollowQuadVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[1] * 2.0f;
+	s_RenderData.HollowQuadVerticesCurr->Colour = colour;
+	s_RenderData.HollowQuadVerticesCurr->Thickness = thickness;
+	s_RenderData.HollowQuadVerticesCurr++;
+
+	s_RenderData.HollowQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[2];
+	s_RenderData.HollowQuadVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[2] * 2.0f;
+	s_RenderData.HollowQuadVerticesCurr->Colour = colour;
+	s_RenderData.HollowQuadVerticesCurr->Thickness = thickness;
+	s_RenderData.HollowQuadVerticesCurr++;
+
+	s_RenderData.HollowQuadVerticesCurr->Position = transform * s_RenderData.UnitQuadVertices[3];
+	s_RenderData.HollowQuadVerticesCurr->LocalPosition = s_RenderData.UnitQuadVertices[3] * 2.0f;
+	s_RenderData.HollowQuadVerticesCurr->Colour = colour;
+	s_RenderData.HollowQuadVerticesCurr->Thickness = thickness;
+	s_RenderData.HollowQuadVerticesCurr++;
+
+	s_RenderData.HollowQuadIndexCount += 6;
 
 	s_RenderData.QuadCount++;
 }
@@ -291,9 +365,14 @@ uint32_t Renderer::DrawCalls()
 	return s_RenderData.DrawCalls;
 }
 
-Shader* Renderer::QuadShader()
+Shader* Renderer::FilledQuadShader()
 {
-	return s_RenderData.QuadShader;
+	return s_RenderData.FilledQuadShader;
+}
+
+Shader* Renderer::HollowQuadShader()
+{
+	return s_RenderData.HollowQuadShader;
 }
 
 Shader* Renderer::CircleShader()

@@ -102,7 +102,7 @@ int main(void)
 
     Renderer::Init();
 
-    Renderer::QuadShader()->SetUniform1i("u_Texture", 0);
+    Renderer::FilledQuadShader()->SetUniform1i("u_Texture", 0);
 
     Scene* scene = new Scene(window);
     scene->SubmitQuad({ 400, 200, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 }, 1.0f);
@@ -131,7 +131,8 @@ int main(void)
         }
 
         glm::mat4 vp = proj * scene->View();
-        Renderer::QuadShader()->SetUniformMat4f("u_ViewProjection", vp);
+        Renderer::FilledQuadShader()->SetUniformMat4f("u_ViewProjection", vp);
+        Renderer::HollowQuadShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);
 
