@@ -1,27 +1,28 @@
 #pragma once
 #include <glm/glm.hpp>
 
-struct Quad
+struct Rect
 {
-	glm::vec3 Position;
-	glm::vec3 Dimensions;
+	int x;
+	int y;
+	int w;
+	int h;
 	glm::vec4 Colour;
-	float Rotation;
 };
 
 struct Circle
 {
-	glm::vec3 Position;
-	glm::vec3 Dimensions;
+	int x;
+	int y;
+	int w;
+	int h;
 	glm::vec4 Colour;
-	float Thickness;
-	float Fade;
 };
 
 struct Line
 {
-	glm::vec3 p1;
-	glm::vec3 p2;
+	glm::vec2 p1;
+	glm::vec2 p2;
 	glm::vec4 colour;
 	float weight;
 };

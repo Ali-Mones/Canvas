@@ -11,8 +11,8 @@ public:
 	bool KeyboardInput(int key);
 	bool MouseInput(int button);
 	void OnUpdate();
-	void SubmitQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation = 0.0f);
-	void SubmitCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness = 1.0f, float fade = 0.02f);
+	void SubmitRect(int x, int y, int w, int h, glm::vec4 colour);
+	void SubmitCircle(int x, int y, int w, int h, glm::vec4 colour);
 	void SubmitLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight);
 	glm::mat4 View() { return m_Camera.View(); }
 private:
@@ -22,8 +22,8 @@ private:
 private:
 	GLFWwindow* m_Window;
 	Camera m_Camera;
-	std::vector<Quad> m_Quads;
+	std::vector<Rect> m_Rects;
 	std::vector<Circle> m_Circles;
 	std::vector<Line> m_Lines;
-	glm::vec4 m_ClearColour = { 0.0f, 0.0f, 0.0f, 1.0f };
+	glm::vec4 m_ClearColour = { 1.0f, 1.0f, 1.0f, 1.0f };
 };

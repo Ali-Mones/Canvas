@@ -102,13 +102,13 @@ int main(void)
 
     Renderer::Init();
 
-    Renderer::FilledQuadShader()->SetUniform1i("u_Texture", 0);
+    Renderer::RectShader()->SetUniform1i("u_Texture", 0);
 
     Scene* scene = new Scene(window);
-    scene->SubmitQuad({ 400, 200, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 }, 1.0f);
-    scene->SubmitQuad({ 600, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
-    scene->SubmitCircle({ 900, 300, 0 }, { 200, 200, 0 }, { 1, 1, 0, 1 });
-    scene->SubmitLine({ 100, 300, 0 }, { 900, 300, 0 }, { 1, 1, 0, 1 }, 2.0f);
+    //scene->SubmitQuad({ 400, 200, 0 }, { 100, 100, 0 }, { 1, 1, 1, 1 }, 1.0f);
+    //scene->SubmitQuad({ 600, 200, 0 }, { 200, 200, 0 }, { 1, 0, 1, 1 });
+    //scene->SubmitCircle({ 900, 300, 0 }, { 200, 200, 0 }, { 1, 1, 0, 1 });
+    //scene->SubmitLine({ 100, 300, 0 }, { 900, 300, 0 }, { 1, 1, 0, 1 }, 2.0f);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -131,8 +131,7 @@ int main(void)
         }
 
         glm::mat4 vp = proj * scene->View();
-        Renderer::FilledQuadShader()->SetUniformMat4f("u_ViewProjection", vp);
-        Renderer::HollowQuadShader()->SetUniformMat4f("u_ViewProjection", vp);
+        Renderer::RectShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);
 

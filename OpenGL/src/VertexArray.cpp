@@ -13,45 +13,24 @@ VertexArray::~VertexArray()
 }
 
 template<>
-void VertexArray::SetLayout<FilledQuadVertex>()
+void VertexArray::SetLayout<RectVertex>()
 {
 	Bind();
-	uint32_t offset = offsetof(FilledQuadVertex, Position);
+	uint32_t offset = offsetof(RectVertex, Position);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(FilledQuadVertex), (const void*) offset);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 
-	offset = offsetof(FilledQuadVertex, Colour);
+	offset = offsetof(RectVertex, Colour);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(FilledQuadVertex), (const void*) offset);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 
-	offset = offsetof(FilledQuadVertex, TexCoords);
+	offset = offsetof(RectVertex, TexCoords);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(FilledQuadVertex), (const void*) offset);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 
-	offset = offsetof(FilledQuadVertex, TexIndex);
+	offset = offsetof(RectVertex, TexIndex);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(FilledQuadVertex), (const void*) offset);
-}
-
-template<>
-void VertexArray::SetLayout<HollowQuadVertex>()
-{
-	Bind();
-	uint32_t offset = offsetof(HollowQuadVertex, Position);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(HollowQuadVertex), (const void*) offset);
-
-	offset = offsetof(HollowQuadVertex, LocalPosition);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(HollowQuadVertex), (const void*) offset);
-
-	offset = offsetof(HollowQuadVertex, Colour);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(HollowQuadVertex), (const void*) offset);
-
-	offset = offsetof(HollowQuadVertex, Thickness);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(HollowQuadVertex), (const void*) offset);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 }
 
 template<>

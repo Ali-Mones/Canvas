@@ -1,20 +1,12 @@
 #pragma once
 #include <glm/glm.hpp>
 
-struct FilledQuadVertex
+struct RectVertex
 {
 	glm::vec4 Position;
 	glm::vec4 Colour;
 	glm::vec2 TexCoords;
 	float TexIndex;
-};
-
-struct HollowQuadVertex
-{
-	glm::vec4 Position;
-	glm::vec2 LocalPosition;
-	glm::vec4 Colour;
-	float Thickness;
 };
 
 struct CircleVertex

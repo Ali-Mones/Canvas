@@ -14,21 +14,25 @@ public:
 
 	static void Clear(glm::vec4 colour);
 
-	static void RenderFilledQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float rotation, float stroke = 0.0f);
-	static void RenderFilledQuad(Quad quad) { RenderFilledQuad(quad.Position, quad.Dimensions, quad.Colour, quad.Rotation); };
-
-	static void RenderHollowQuad(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thicknes);
-
-	static void RenderCircle(glm::vec3 pos, glm::vec3 dims, glm::vec4 colour, float thickness, float fade, float stroke = 0.0f);
-	static void RenderCircle(Circle circle) { RenderCircle(circle.Position, circle.Dimensions, circle.Colour, circle.Thickness, circle.Fade); }
-
-	static void RenderLine(glm::vec3 p1, glm::vec3 p2, glm::vec4 colour, float weight);
-	static void RenderLine(Line line) { RenderLine(line.p1, line.p2, line.colour, line.weight); }
+	static void Rect(int x, int y, int w, int h = -1);//, int tl = 0, int tr = 0, int bl = 0, int br = 0);
+	static void Ellipse(int x, int y, int w, int h = -1);
+	static void Quad(int p1, int p2, int p3, int p4);
+	static void Line(int x1, int y1, int x2, int y2);
 
 	static uint32_t QuadCount();
 	static uint32_t DrawCalls();
-	static Shader* FilledQuadShader();
-	static Shader* HollowQuadShader();
+
+	static Shader* RectShader();
 	static Shader* CircleShader();
 	static Shader* LineShader();
+
+	static void Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
+	static void Fill(glm::vec4 colour) { Fill(colour.r, colour.g, colour.b, colour.a); }
+	static void Fill(uint32_t grey) { Fill(grey, grey, grey, 255); }
+
+	static void Stroke(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
+	static void Stroke(glm::vec4 colour) { Stroke(colour.r, colour.g, colour.b, colour.a); }
+	static void Stroke(uint32_t grey) { Stroke(grey, grey, grey, 255); }
+
+	static void StrokeWeight(uint32_t weight);
 };
