@@ -63,9 +63,8 @@ void Scene::OnInputUpdate()
 		glfwGetWindowSize(m_Window, &width, &height);
 		glfwGetCursorPos(m_Window, &xpos, &ypos);
 
-		glm::vec2 center = m_Camera.Center();
-
-		SubmitRect(-center.x + xpos, center.y + height - ypos, 100, 100, glm::vec4(255, 0, 0, 255));
+		glm::vec4 model = m_Camera.GetWorldPosition(xpos, ypos, width, height);
+		SubmitRect(model.x, model.y, 100, 100, glm::vec4(255, 0, 0, 255));
 	}
 }
 

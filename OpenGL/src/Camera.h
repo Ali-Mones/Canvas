@@ -7,6 +7,7 @@ class Camera
 {
 public:
 	Camera(float windowWidth, float windowHeight);
+
 	void MoveLeft();
 	void MoveRight();
 	void MoveUp();
@@ -15,8 +16,7 @@ public:
 	void ZoomIn();
 	void ZoomOut();
 
-	int Left() { return -m_Transform.x; }
-	int Bottom() { return -m_Transform.y; }
+	glm::vec4 GetWorldPosition(float x, float y, float width, float height);
 
 	void SetProjection(float left, float right, float bottom, float top) { m_Projection = glm::ortho(left, right, bottom, top, -1.0f, 1.0f); }
 
@@ -28,10 +28,10 @@ private:
 	void RecalculateProjection();
 private:
 	float m_AspectRatio;
-	float m_ZoomSpeed = 1.0f;
+	float m_ZoomSpeed = 5.0f;
 	float m_Left, m_Right, m_Bottom, m_Top;
 
-	glm::vec3 m_Transform;
+	glm::vec3 m_Translation;
 	glm::mat4 m_View;
 	glm::mat4 m_Projection;
 	glm::mat4 m_ViewProjection;
