@@ -62,13 +62,15 @@ int Shader::GetUniformLocation(const std::string& name)
 
 ShaderProgramSource Shader::ParseShader(const std::string& filePath)
 {
-    std::ifstream stream(filePath);
+    std::string openglPath = "../Canvas/";
+    openglPath += filePath;
+
+    std::ifstream stream(openglPath);
 
     enum class ShaderType
     {
         NONE = -1, VERTEX = 0, FRAGMENT = 1
     };
-
 
     ShaderType type = ShaderType::NONE;
     std::string line;

@@ -2,19 +2,9 @@
 #include "Renderer.h"
 #include <imgui/imgui.h>
 
-Scene::Scene(GLFWwindow* window)
-	: m_Window(window), m_Camera(1280, 720)
+Scene::Scene()
+	: m_Camera(Camera::Get())
 {
-}
-
-bool Scene::KeyboardInput(int key)
-{
-	return glfwGetKey(m_Window, key) == GLFW_PRESS;
-}
-
-bool Scene::MouseInput(int button)
-{
-	return glfwGetMouseButton(m_Window, button) == GLFW_PRESS;
 }
 
 void Scene::OnUpdate()
@@ -26,7 +16,7 @@ void Scene::OnUpdate()
 
 void Scene::OnInputUpdate()
 {
-	if (KeyboardInput(GLFW_KEY_LEFT))
+	/*if (KeyboardInput(GLFW_KEY_LEFT))
 		m_Camera.MoveLeft();
 
 	if (KeyboardInput(GLFW_KEY_RIGHT))
@@ -64,17 +54,17 @@ void Scene::OnInputUpdate()
 		glfwGetCursorPos(m_Window, &xpos, &ypos);
 
 		glm::vec4 model = m_Camera.GetWorldPosition(xpos, ypos, width, height);
-		SubmitRect(model.x, model.y, 100, 100, glm::vec4(255, 0, 0, 255));
-	}
+		SubmitCircle(model.x, model.y, 100, 100, glm::vec4(255, 0, 0, 255));
+	}*/
 }
 
 void Scene::OnRender()
 {
-	Renderer::Clear(m_ClearColour);
+	/*Renderer::Clear(m_ClearColour);
 	Renderer::StartBatch();
 
 	Renderer::Fill(100, 100, 100);
-	Renderer::StrokeWeight(1);
+	Renderer::StrokeWeight(10);
 
 	for (auto& rect : m_Rects)
 	{
@@ -86,7 +76,7 @@ void Scene::OnRender()
 	{
 		Renderer::Fill(circle.Colour);
 		Renderer::Ellipse(circle.x, circle.y, circle.w, circle.h);
-	}
+	}*/
 
 	//for (auto& line : m_Lines)
 		//Renderer::RenderLine(line);

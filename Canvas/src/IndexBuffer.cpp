@@ -1,5 +1,7 @@
 #include "IndexBuffer.h"
 
+#include <glew.h>
+
 IndexBuffer::IndexBuffer(const uint32_t count, const void* data)
 {
 	glGenBuffers(1, &m_RendererID);

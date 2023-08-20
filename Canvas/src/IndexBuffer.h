@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glew.h>
 #include <cstdint>
 
 class IndexBuffer

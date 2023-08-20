@@ -1,9 +1,12 @@
 #pragma once
-#include "Shader.h"
-#include "Vertex.h"
-#include "Shape.h"
 
-class Renderer
+#include "Core.h"
+
+#include <cstdint>
+
+class Shader;
+
+class API Renderer
 {
 public:
 	static void Init();
@@ -12,7 +15,7 @@ public:
 	static void StartBatch();
 	static void Flush();
 
-	static void Clear(glm::vec4 colour);
+	static void Clear(uint32_t r, uint32_t g, uint32_t b);
 
 	static void Rect(int x, int y, int w, int h = -1);//, int tl = 0, int tr = 0, int bl = 0, int br = 0);
 	static void Ellipse(int x, int y, int w, int h = -1);
@@ -27,11 +30,9 @@ public:
 	static Shader* LineShader();
 
 	static void Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
-	static void Fill(glm::vec4 colour) { Fill(colour.r, colour.g, colour.b, colour.a); }
 	static void Fill(uint32_t grey) { Fill(grey, grey, grey, 255); }
 
 	static void Stroke(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
-	static void Stroke(glm::vec4 colour) { Stroke(colour.r, colour.g, colour.b, colour.a); }
 	static void Stroke(uint32_t grey) { Stroke(grey, grey, grey, 255); }
 
 	static void StrokeWeight(uint32_t weight);

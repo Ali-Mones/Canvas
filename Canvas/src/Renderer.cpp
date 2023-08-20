@@ -6,6 +6,8 @@
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 
+#include "Vertex.h"
+
 struct RenderData
 {
 	IndexBuffer* RectIndexBuffer;
@@ -163,11 +165,13 @@ void Renderer::Shutdown()
 	delete s_RenderData.LineVerticesBase;
 }
 
-void Renderer::Clear(glm::vec4 colour)
+void Renderer::Clear(uint32_t r, uint32_t g, uint32_t b)
 {
 	s_RenderData.DrawCalls = 0;
 	s_RenderData.RectCount = 0;
 	s_RenderData.LineCount = 0;
+
+	glm::vec4 colour = glm::vec4(r / 255.0f, g / 255.0f, g / 255.0f, 1);
 
 	glClearColor(colour.r, colour.g, colour.b, colour.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
