@@ -363,4 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 bin-int/
-OpenGL.sln
+*.sln
+*.vcxproj
+*.filters
