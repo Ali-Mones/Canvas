@@ -12,7 +12,7 @@ class API Application
 public:
 	static Application& Get();
 	void Run(std::function<void()> drawFun);
-	virtual ~Application();
+	~Application();
 
 	Application(const Application&) = delete;
 private:

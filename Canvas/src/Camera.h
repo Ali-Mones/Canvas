@@ -32,7 +32,7 @@ private:
 private:
 	float m_AspectRatio;
 	float m_ZoomSpeed = 5.0f;
-	float m_ZoomLevel = 1.0f;
+	float m_ZoomLevel;
 	float m_WindowWidth, m_WindowHeight;
 
 	glm::vec3 m_Translation;
