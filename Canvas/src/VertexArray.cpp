@@ -20,17 +20,33 @@ void VertexArray::SetLayout<RectVertex>()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 
-	offset = offsetof(RectVertex, Colour);
+	offset = offsetof(RectVertex, LocalPosition);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+
+	offset = offsetof(RectVertex, FillColour);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+
+	offset = offsetof(RectVertex, StrokeColour);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+
+	offset = offsetof(RectVertex, ThicknessX);
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+
+	offset = offsetof(RectVertex, ThicknessY);
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 
 	offset = offsetof(RectVertex, TexCoords);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 
 	offset = offsetof(RectVertex, TexIndex);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+	glEnableVertexAttribArray(7);
+	glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
 }
 
 template<>
@@ -45,7 +61,7 @@ void VertexArray::SetLayout<CircleVertex>()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
 
-	offset = offsetof(CircleVertex, Colour);
+	offset = offsetof(CircleVertex, FillColour);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
 

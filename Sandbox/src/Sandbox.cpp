@@ -1,24 +1,33 @@
+#include "Canvas.h"
 #include "EntryPoint.h"
+using namespace Canvas;
 
 void Setup()
 {
-	Canvas::CreateCanvas(1280, 720);
+	CreateCanvas(1280, 720);
 }
 
 void Draw()
 {
-	// TODO: move shaders to opengl project
-	Renderer::Clear(255, 255, 255);
+	// TODO: add mouseX, mouseY, width, height props, Point(int x, int y)
+	Clear(255, 255, 255);
 
-	Renderer::Fill(10, 200, 240);
-	Renderer::Stroke(100);
-	Renderer::StrokeWeight(1);
-	Renderer::Rect(200, 200, 300);
+	Fill(0);
+	Stroke(100, 200, 0);
+	StrokeWeight(5);
+	NoFill();
+	Rect(200, 200, 300, 100);
 
-	Renderer::Stroke(0);
-	Renderer::StrokeWeight(10);
-	Renderer::Line(0, 0, 200, 200);
+	Rect(300, 230, 300, 100);
 
-	Renderer::Stroke(255, 0, 255);
-	Renderer::Line(100, 200, 900, 100);
+	StrokeWeight(10);
+	Line(1000, 100, 1100, 300);
+
+	Fill(255, 0, 0);
+	Stroke(0, 0, 255);
+	Ellipse(400, 400, 500, 500);
+
+	StrokeWeight(10);
+	Line(100, 200, 900, 100);
+	BezierCurve(0, 400, 400, 100, 800, 700, 1280, 400);
 }

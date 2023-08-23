@@ -20,7 +20,3 @@ private:
 	Window* m_Window = nullptr;
 	Camera& m_Camera;
 };
-
-namespace Canvas {
-	void API CreateCanvas(uint32_t width, uint32_t height);
-}

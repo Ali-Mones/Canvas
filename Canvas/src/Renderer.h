@@ -4,9 +4,11 @@
 
 #include <cstdint>
 
+#include <glm/glm.hpp>
+
 class Shader;
 
-class API Renderer
+class Renderer
 {
 public:
 	static void Init();
@@ -15,25 +17,15 @@ public:
 	static void StartBatch();
 	static void Flush();
 
-	static void Clear(uint32_t r, uint32_t g, uint32_t b);
+	static void Clear(glm::vec4 colour);
 
-	static void Rect(int x, int y, int w, int h = -1);//, int tl = 0, int tr = 0, int bl = 0, int br = 0);
-	static void Ellipse(int x, int y, int w, int h = -1);
+	static void Rect(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, float angle);
+	static void Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColour, int thickness, float angle);
 	static void Quad(int p1, int p2, int p3, int p4);
-	static void Line(int x1, int y1, int x2, int y2);
 
 	static uint32_t QuadCount();
 	static uint32_t DrawCalls();
 
 	static Shader* RectShader();
 	static Shader* CircleShader();
-	static Shader* LineShader();
-
-	static void Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
-	static void Fill(uint32_t grey) { Fill(grey, grey, grey, 255); }
-
-	static void Stroke(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
-	static void Stroke(uint32_t grey) { Stroke(grey, grey, grey, 255); }
-
-	static void StrokeWeight(uint32_t weight);
 };

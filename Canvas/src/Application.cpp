@@ -11,9 +11,10 @@
 
 #include "Texture.h"
 #include "Renderer.h"
-#include "Scene.h"
 #include "Window.h"
 #include "Shader.h"
+#include "Camera.h"
+#include "Canvas.h"
 
 static uint32_t s_Width = -1;
 static uint32_t s_Height = -1;
@@ -87,7 +88,6 @@ void Application::Run(std::function<void()> drawFun)
 
         Renderer::RectShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
-        Renderer::LineShader()->SetUniformMat4f("u_ViewProjection", vp);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
