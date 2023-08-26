@@ -12,6 +12,7 @@ class API Application
 public:
 	static Application& Get();
 	void Run(std::function<void()> drawFun);
+	Window* GetWindow() { return m_Window; };
 	~Application();
 
 	Application(const Application&) = delete;

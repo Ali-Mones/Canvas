@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Application.h"
+#include "Input.h"
 
 inline extern int width, height;
 

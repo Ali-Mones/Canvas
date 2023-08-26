@@ -15,6 +15,10 @@ project "Canvas"
     targetdir "%{wks.location}/bin/%{cfg.buildcfg}/%{prj.name}"
     objdir "%{wks.location}/bin-int/%{cfg.buildcfg}/%{prj.name}"
 
+    postbuildcommands {
+        "{COPY} %{wks.location}bin\\%{cfg.buildcfg}\\%{prj.name}\\Canvas.dll %{wks.location}bin\\%{cfg.buildcfg}\\Sandbox\\"
+    }
+
     defines {
         "BUILD_DLL",
         "GLEW_STATIC"
