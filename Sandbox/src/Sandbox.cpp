@@ -32,5 +32,5 @@ void Draw()
 
 	StrokeWeight(10);
 	Line(100, 200, 900, 100);
-	BezierCurve(0, 400, 400, 100, 800, 700, 1280, 400);
+	BezierCurve(0, 400, 400, 100, MouseX(), MouseY(), 1280, 400);
 }

@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "Canvas.h"
 #include "Window.h"
+#include "Camera.h"
 
 struct CanvasData
 {
@@ -131,7 +132,8 @@ namespace Canvas {
 		double xpos, ypos;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
 		glfwGetCursorPos(window, &xpos, &ypos);
-		return xpos;
+		glm::vec4 pos = Camera::Get().GetWorldPosition(xpos, ypos);
+		return pos.x;
 	}
 
 	double API MouseY()
@@ -139,7 +141,8 @@ namespace Canvas {
 		double xpos, ypos;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
 		glfwGetCursorPos(window, &xpos, &ypos);
-		return ypos;
+		glm::vec4 pos = Camera::Get().GetWorldPosition(xpos, ypos);
+		return pos.y;
 	}
 
 	uint32_t API WindowWidth()

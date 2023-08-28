@@ -18,7 +18,7 @@ public:
 	void ZoomIn();
 	void ZoomOut();
 
-	glm::vec4 GetWorldPosition(float x, float y, float width, float height);
+	glm::vec4 GetWorldPosition(float x, float y);
 	Camera(const Camera&) = delete;
 private:
 	Camera(float windowWidth, float windowHeight);

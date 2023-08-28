@@ -64,9 +64,9 @@ void Camera::ZoomOut()
 	RecalculateProjection();
 }
 
-glm::vec4 Camera::GetWorldPosition(float x, float y, float width, float height)
+glm::vec4 Camera::GetWorldPosition(float x, float y)
 {
-	glm::vec4 clip((float) x * 2.0f / width - 1.0f, (float) (height - y) * 2.0f / height - 1.0f, 0.0f, 1.0f);
+	glm::vec4 clip((float) x * 2.0f / m_WindowWidth - 1.0f, (float) (m_WindowHeight - y) * 2.0f / m_WindowHeight - 1.0f, 0.0f, 1.0f);
 	glm::vec4 model = glm::inverse(ViewProjection()) * clip;
 	return model;
 }
