@@ -38,9 +38,11 @@ in float v_Fade;
 
 void main()
 {
+	if (v_FillColour.w == 0)
+		discard;
+
     float dis = length(v_LocalPosition);
     float alpha = smoothstep(0.0, v_Fade / 2, 1.0 - dis);
     alpha *= smoothstep(v_Thickness - v_Fade, v_Thickness, dis);
-
 	o_Colour = vec4(v_FillColour.xyz, alpha);
 }

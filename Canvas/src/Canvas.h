@@ -3,8 +3,6 @@
 #include "Application.h"
 #include "Input.h"
 
-inline extern int width, height;
-
 namespace Canvas {
 	void API CreateCanvas(uint32_t width, uint32_t height);
 	void API Clear(uint32_t r, uint32_t g, uint32_t b);
@@ -23,4 +21,10 @@ namespace Canvas {
 
 	void API NoFill();
 	void API NoStroke();
+
+	double API MouseX();
+	double API MouseY();
+
+	uint32_t API WindowWidth();
+	uint32_t API WindowHeight();
 }

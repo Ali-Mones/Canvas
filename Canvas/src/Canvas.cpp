@@ -3,6 +3,7 @@
 
 #include "Renderer.h"
 #include "Canvas.h"
+#include "Window.h"
 
 struct CanvasData
 {
@@ -24,7 +25,7 @@ namespace Canvas {
 
 	void Rect(int x, int y, uint32_t w, uint32_t h)
 	{
-		glm::vec3 pos = glm::vec3(x, y, 0);
+		glm::vec3 pos = glm::vec3(x, y, 1);
 		glm::vec3 dims = glm::vec3(w, h, 0);
 
 		glm::vec4 fillColour = glm::vec4(s_Data.FillColour.r, s_Data.FillColour.g, s_Data.FillColour.b, s_Data.FillColour.a);
@@ -123,5 +124,37 @@ namespace Canvas {
 	void NoStroke()
 	{
 		s_Data.StrokeWeight = 0;
+	}
+
+	double API MouseX()
+	{
+		double xpos, ypos;
+		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
+		glfwGetCursorPos(window, &xpos, &ypos);
+		return xpos;
+	}
+
+	double API MouseY()
+	{
+		double xpos, ypos;
+		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
+		glfwGetCursorPos(window, &xpos, &ypos);
+		return ypos;
+	}
+
+	uint32_t API WindowWidth()
+	{
+		int width, height;
+		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
+		glfwGetWindowSize(window, &width, &height);
+		return width;
+	}
+
+	uint32_t API WindowHeight()
+	{
+		int width, height;
+		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
+		glfwGetWindowSize(window, &width, &height);
+		return height;
 	}
 }

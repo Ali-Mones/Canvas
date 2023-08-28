@@ -1,5 +1,7 @@
 #include "Canvas.h"
 #include "EntryPoint.h"
+#include <iostream>
+
 using namespace Canvas;
 
 void Setup()
@@ -9,7 +11,7 @@ void Setup()
 
 void Draw()
 {
-	// TODO: add mouseX, mouseY, width, height props, Point(int x, int y)
+	// TODO: Point(int x, int y)
 	Clear(255, 255, 255);
 
 	Fill(0);
@@ -25,12 +27,10 @@ void Draw()
 
 	Fill(255, 0, 0);
 	Stroke(0, 0, 255);
+	StrokeWeight(20);
 	Ellipse(400, 400, 500, 500);
 
 	StrokeWeight(10);
 	Line(100, 200, 900, 100);
 	BezierCurve(0, 400, 400, 100, 800, 700, 1280, 400);
-
-	if (Input::IsKeyDown(KeyCode::Key_A))
-		Line(500, 200, 900, 100);
 }
