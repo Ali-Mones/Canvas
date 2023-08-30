@@ -1,28 +1,55 @@
 #include "Texture.h"
 #include <stb_image/stb_image.h>
 
-#include <glew.h>
 #include <iostream>
+#include <glew.h>
 
-Texture::Texture(const std::string& filepath)
-	: m_RendererID(0), m_Filepath(filepath), m_BPP(0)
+Texture::Texture()
+	: m_RendererID(0), m_Filepath(""), m_Channels(4)
 {
-	stbi_set_flip_vertically_on_load(1);
-	m_Localbuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
+	m_InternalFormat = GL_RGBA8;
+	m_DataFormat = GL_RGBA;
 
-	glGenTextures(1, &m_RendererID);
-	glBindTexture(GL_TEXTURE_2D, m_RendererID);
+	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_Localbuffer);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
 
-	if (m_Localbuffer)
-		stbi_image_free(m_Localbuffer);
+Texture::Texture(const std::string& filepath)
+	: m_RendererID(0), m_Filepath(filepath), m_Channels(0)
+{
+	stbi_set_flip_vertically_on_load(1);
+	stbi_uc* data = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_Channels, 4);
+
+	if (m_Channels == 4)
+	{
+		m_InternalFormat = GL_RGBA8;
+		m_DataFormat = GL_RGBA;
+	}
+	else if (m_Channels == 3)
+	{
+		m_InternalFormat = GL_RGB8;
+		m_DataFormat = GL_RGB;
+	}
+
+	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+
+	if (data)
+		stbi_image_free(data);
 	else
 		std::cout << stbi_failure_reason() << std::endl;
 }
@@ -32,10 +59,18 @@ Texture::~Texture()
 	glDeleteTextures(1, &m_RendererID);
 }
 
+void Texture::SetData(void* data, uint32_t size)
+{
+	uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
+	if (size == m_Width * m_Height * bpp)
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	else
+		std::cout << "Incorrect size for data: size = " << size << " , width * height * bpp = " << m_Width * m_Height * bpp;
+}
+
 void Texture::Bind(uint32_t slot) const
 {
-	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, m_RendererID);
+	glBindTextureUnit(slot, m_RendererID);
 }
 
 void Texture::Unbind() const

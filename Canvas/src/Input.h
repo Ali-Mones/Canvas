@@ -149,7 +149,7 @@ enum class Key
 
 class GLFWwindow;
 
-class API Input
+class CANVAS_API Input
 {
 public:
 	static bool IsKeyDown(Key key);

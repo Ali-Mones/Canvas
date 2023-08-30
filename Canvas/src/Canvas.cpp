@@ -10,12 +10,15 @@ struct CanvasData
 {
 	/* Attributes */
 	glm::vec4 FillColour = glm::vec4(1);
+
 	glm::vec4 StrokeColour = glm::vec4(1);
 	uint32_t StrokeWeight = 0;
-	bool Filled = true;
+
+	float TilingFactor = 1.0f;
 };
 
 static CanvasData s_Data;
+static uint32_t textureSlot = 1;
 
 namespace Canvas {
 
@@ -29,15 +32,23 @@ namespace Canvas {
 		glm::vec3 pos = glm::vec3(x, y, 1);
 		glm::vec3 dims = glm::vec3(w, h, 0);
 
-		glm::vec4 fillColour = glm::vec4(s_Data.FillColour.r, s_Data.FillColour.g, s_Data.FillColour.b, s_Data.FillColour.a);
-		if (!s_Data.Filled)
-			fillColour = glm::vec4(0);
+		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeWeight ? s_Data.StrokeColour.a : 0);
+		if (!s_Data.StrokeWeight)
+			strokeColour = glm::vec4(0);
+
+		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
+	}
+
+	void TexturedRect(int x, int y, uint32_t w, uint32_t h, Texture* texture)
+	{
+		glm::vec3 pos = glm::vec3(x, y, 1);
+		glm::vec3 dims = glm::vec3(w, h, 0);
 
 		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeWeight ? s_Data.StrokeColour.a : 0);
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Rect(pos, dims, fillColour, strokeColour, s_Data.StrokeWeight, 0);
+		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, texture, s_Data.TilingFactor);
 	}
 
 	void Ellipse(int x, int y, int w, int h)
@@ -45,15 +56,11 @@ namespace Canvas {
 		glm::vec3 pos = glm::vec3(x, y, 0);
 		glm::vec3 dims = glm::vec3(w, h, 0);
 
-		glm::vec4 fillColour = glm::vec4(s_Data.FillColour.r, s_Data.FillColour.g, s_Data.FillColour.b, s_Data.FillColour.a);
-		if (!s_Data.Filled)
-			fillColour = glm::vec4(0);
-
 		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeColour.a);
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Ellipse(pos, dims, fillColour, -1, 0);
+		Renderer::Ellipse(pos, dims, s_Data.FillColour, -1, 0);
 		Renderer::Ellipse(pos, dims, strokeColour, s_Data.StrokeWeight, 0);
 	}
 
@@ -69,7 +76,7 @@ namespace Canvas {
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Rect(pos, dims, strokeColour, glm::vec4(0), 0, angle);
+		Renderer::Rect(pos, dims, angle, strokeColour, glm::vec4(0), 0.0f, nullptr, 1.0f);
 
 		float diameter = s_Data.StrokeWeight;
 		glm::vec3 circleDims(diameter, diameter, 0);
@@ -101,9 +108,13 @@ namespace Canvas {
 		}
 	}
 
+	void Point(int x, int y)
+	{
+		Rect(x, y, 2, 2);
+	}
+
 	void Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a)
 	{
-		s_Data.Filled = true;
 		s_Data.FillColour = glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 	}
 
@@ -119,7 +130,7 @@ namespace Canvas {
 
 	void NoFill()
 	{
-		s_Data.Filled = false;
+		s_Data.FillColour = glm::vec4(0);
 	}
 
 	void NoStroke()
@@ -127,7 +138,17 @@ namespace Canvas {
 		s_Data.StrokeWeight = 0;
 	}
 
-	double API MouseX()
+	void TextureTilingFactor(float tilingFactor)
+	{
+		s_Data.TilingFactor = tilingFactor;
+	}
+
+	void NoTextureTiling()
+	{
+		s_Data.TilingFactor = 1.0f;
+	}
+
+	double MouseX()
 	{
 		double xpos, ypos;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
@@ -136,7 +157,7 @@ namespace Canvas {
 		return pos.x;
 	}
 
-	double API MouseY()
+	double MouseY()
 	{
 		double xpos, ypos;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
@@ -145,7 +166,7 @@ namespace Canvas {
 		return pos.y;
 	}
 
-	uint32_t API WindowWidth()
+	uint32_t WindowWidth()
 	{
 		int width, height;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
@@ -153,7 +174,7 @@ namespace Canvas {
 		return width;
 	}
 
-	uint32_t API WindowHeight()
+	uint32_t WindowHeight()
 	{
 		int width, height;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();

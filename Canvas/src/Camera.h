@@ -5,7 +5,7 @@
 
 #include "Core.h"
 
-class API Camera
+class CANVAS_API Camera
 {
 public:
 	static Camera& Get();

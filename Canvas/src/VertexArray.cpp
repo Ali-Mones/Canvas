@@ -47,6 +47,10 @@ void VertexArray::SetLayout<RectVertex>()
 	offset = offsetof(RectVertex, TexIndex);
 	glEnableVertexAttribArray(7);
 	glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*) offset);
+
+	offset = offsetof(RectVertex, TilingFactor);
+	glEnableVertexAttribArray(8);
+	glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (const void*)offset);
 }
 
 template<>

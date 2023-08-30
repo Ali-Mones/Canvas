@@ -1,12 +1,15 @@
-#include "Renderer.h"
-#include "Shader.h"
 #include <glew.h>
 #include <glm/ext/matrix_transform.hpp>
+#include <array>
+
+#include "Renderer.h"
+#include "Shader.h"
 #include "VertexArray.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
-
 #include "Vertex.h"
+#include "Texture.h"
+
 
 struct RenderData
 {
@@ -28,13 +31,19 @@ struct RenderData
 
 	glm::vec4 UnitRectVertices[4];
 
+
 	/* Statistics */
 	uint32_t RectCount = 0;
 	uint32_t DrawCalls = 0;
 
-	const uint32_t MaxRectCount = 500;
-	const uint32_t MaxVertexCount = MaxRectCount * 4;
-	const uint32_t MaxIndexCount = MaxRectCount * 6;
+	static const uint32_t MaxRectCount = 500;
+	static const uint32_t MaxVertexCount = MaxRectCount * 4;
+	static const uint32_t MaxIndexCount = MaxRectCount * 6;
+	static const uint32_t MaxTextureSlots = 32;	// TODO: check how to make dynamic
+
+	std::array<Texture*, MaxTextureSlots> TextureSlots;
+	uint32_t TextureSlotIndex = 1; // index 0 = white texture
+	Texture* WhiteTexture;
 };
 
 static RenderData s_RenderData;
@@ -75,6 +84,17 @@ void Renderer::Init()
 	s_RenderData.UnitRectVertices[1] = glm::vec4( 0.5, -0.5, 0, 1);
 	s_RenderData.UnitRectVertices[2] = glm::vec4( 0.5,  0.5, 0, 1);
 	s_RenderData.UnitRectVertices[3] = glm::vec4(-0.5,  0.5, 0, 1);
+
+	s_RenderData.WhiteTexture = new Texture();
+	uint32_t whiteData = 0xffffffff;
+	s_RenderData.WhiteTexture->SetData(&whiteData, sizeof(uint32_t));
+	s_RenderData.TextureSlots[0] = s_RenderData.WhiteTexture;
+
+	int samplers[s_RenderData.MaxTextureSlots];
+	for (int i = 0; i < s_RenderData.MaxTextureSlots; i++)
+		samplers[i] = i;
+	
+	s_RenderData.RectShader->SetUniformArray1i("u_Textures", samplers, s_RenderData.MaxTextureSlots);
 }
 
 void Renderer::StartBatch()
@@ -84,6 +104,8 @@ void Renderer::StartBatch()
 
 	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 	s_RenderData.CircleIndexCount = 0;
+
+	s_RenderData.TextureSlotIndex = 1;
 }
 
 void Renderer::Flush()
@@ -92,6 +114,10 @@ void Renderer::Flush()
 	{
 		uint32_t count = s_RenderData.RectVerticesCurr - s_RenderData.RectVerticesBase;
 		s_RenderData.RectVertexBuffer->SetBuffer(count * sizeof(RectVertex), s_RenderData.RectVerticesBase);
+
+		for (uint32_t i = 0; i < s_RenderData.TextureSlotIndex; i++)
+			s_RenderData.TextureSlots[i]->Bind(i);
+
 		s_RenderData.RectVertexArray->Bind();
 		s_RenderData.RectShader->Bind();
 		s_RenderData.RectIndexBuffer->Bind();
@@ -124,6 +150,8 @@ void Renderer::Shutdown()
 	delete s_RenderData.CircleVertexBuffer;
 	delete s_RenderData.CircleShader;
 	delete s_RenderData.CircleVerticesBase;
+
+	delete s_RenderData.WhiteTexture;
 }
 
 void Renderer::Clear(glm::vec4 colour)
@@ -135,13 +163,38 @@ void Renderer::Clear(glm::vec4 colour)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, float angle)
+void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, Texture* texture, float tilingFactor)
 {
 	uint32_t vertexCount = s_RenderData.RectVerticesCurr - s_RenderData.RectVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
 	{
 		Flush();
 		StartBatch();
+	}
+
+	float textureIndex = 0.0f;
+	if (texture)
+	{
+		if (s_RenderData.TextureSlotIndex >= s_RenderData.MaxTextureSlots)
+		{
+			Flush();
+			StartBatch();
+		}
+
+		for (int i = 1; i < s_RenderData.TextureSlotIndex; i++)
+		{
+			if (*s_RenderData.TextureSlots[i] == *texture)
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0.0f)
+		{
+			textureIndex = (float)s_RenderData.TextureSlotIndex;
+			s_RenderData.TextureSlots[s_RenderData.TextureSlotIndex++] = texture;
+		}
 	}
 
 	float thicknessX = (float) thickness / dimensions.x;
@@ -151,45 +204,21 @@ void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColo
 		* glm::rotate(glm::mat4(1), angle, { 0, 0, 1 })
 		* glm::scale(glm::mat4(1), glm::vec3(dimensions.x, dimensions.y, 0));
 
-	s_RenderData.RectVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[0];
-	s_RenderData.RectVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[0] * 2.0f;
-	s_RenderData.RectVerticesCurr->FillColour = fillColour;
-	s_RenderData.RectVerticesCurr->StrokeColour = strokeColour;
-	s_RenderData.RectVerticesCurr->ThicknessX = thicknessX;
-	s_RenderData.RectVerticesCurr->ThicknessY = thicknessY;
-	s_RenderData.RectVerticesCurr->TexCoords = glm::vec2(0, 0);
-	s_RenderData.RectVerticesCurr->TexIndex = 1;
-	s_RenderData.RectVerticesCurr++;
+	static glm::vec2 texCoords[] = { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } };
 
-	s_RenderData.RectVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[1];
-	s_RenderData.RectVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[1] * 2.0f;
-	s_RenderData.RectVerticesCurr->FillColour = fillColour;
-	s_RenderData.RectVerticesCurr->StrokeColour = strokeColour;
-	s_RenderData.RectVerticesCurr->ThicknessX = thicknessX;
-	s_RenderData.RectVerticesCurr->ThicknessY = thicknessY;
-	s_RenderData.RectVerticesCurr->TexCoords = glm::vec2(0, 0);
-	s_RenderData.RectVerticesCurr->TexIndex = 1;
-	s_RenderData.RectVerticesCurr++;
-
-	s_RenderData.RectVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[2];
-	s_RenderData.RectVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[2] * 2.0f;
-	s_RenderData.RectVerticesCurr->FillColour = fillColour;
-	s_RenderData.RectVerticesCurr->StrokeColour = strokeColour;
-	s_RenderData.RectVerticesCurr->ThicknessX = thicknessX;
-	s_RenderData.RectVerticesCurr->ThicknessY = thicknessY;
-	s_RenderData.RectVerticesCurr->TexCoords = glm::vec2(0, 0);
-	s_RenderData.RectVerticesCurr->TexIndex = 1;
-	s_RenderData.RectVerticesCurr++;
-
-	s_RenderData.RectVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[3];
-	s_RenderData.RectVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[3] * 2.0f;
-	s_RenderData.RectVerticesCurr->FillColour = fillColour;
-	s_RenderData.RectVerticesCurr->StrokeColour = strokeColour;
-	s_RenderData.RectVerticesCurr->ThicknessX = thicknessX;
-	s_RenderData.RectVerticesCurr->ThicknessY = thicknessY;
-	s_RenderData.RectVerticesCurr->TexCoords = glm::vec2(0, 0);
-	s_RenderData.RectVerticesCurr->TexIndex = 1;
-	s_RenderData.RectVerticesCurr++;
+	for (int i = 0; i < 4; i++)
+	{
+		s_RenderData.RectVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[i];
+		s_RenderData.RectVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[i] * 2.0f;
+		s_RenderData.RectVerticesCurr->FillColour = fillColour;
+		s_RenderData.RectVerticesCurr->StrokeColour = strokeColour;
+		s_RenderData.RectVerticesCurr->ThicknessX = thicknessX;
+		s_RenderData.RectVerticesCurr->ThicknessY = thicknessY;
+		s_RenderData.RectVerticesCurr->TexCoords = texCoords[i];
+		s_RenderData.RectVerticesCurr->TexIndex = textureIndex;
+		s_RenderData.RectVerticesCurr->TilingFactor = tilingFactor;
+		s_RenderData.RectVerticesCurr++;
+	}
 
 	s_RenderData.RectIndexCount += 6;
 
@@ -215,33 +244,15 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 	if (thickness == -1)
 		r = 0.0f;
 
-	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[0];
-	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[0] * 2.0f;
-	s_RenderData.CircleVerticesCurr->FillColour = fillColour;
-	s_RenderData.CircleVerticesCurr->Thickness = r;
-	s_RenderData.CircleVerticesCurr->Fade = fade;
-	s_RenderData.CircleVerticesCurr++;
-
-	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[1];
-	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[1] * 2.0f;
-	s_RenderData.CircleVerticesCurr->FillColour = fillColour;
-	s_RenderData.CircleVerticesCurr->Thickness = r;
-	s_RenderData.CircleVerticesCurr->Fade = fade;
-	s_RenderData.CircleVerticesCurr++;
-
-	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[2];
-	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[2] * 2.0f;
-	s_RenderData.CircleVerticesCurr->FillColour = fillColour;
-	s_RenderData.CircleVerticesCurr->Thickness = r;
-	s_RenderData.CircleVerticesCurr->Fade = fade;
-	s_RenderData.CircleVerticesCurr++;
-
-	s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[3];
-	s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[3] * 2.0f;
-	s_RenderData.CircleVerticesCurr->FillColour = fillColour;
-	s_RenderData.CircleVerticesCurr->Thickness = r;
-	s_RenderData.CircleVerticesCurr->Fade = fade;
-	s_RenderData.CircleVerticesCurr++;
+	for (int i = 0; i < 4; i++)
+	{
+		s_RenderData.CircleVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[i];
+		s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[i] * 2.0f;
+		s_RenderData.CircleVerticesCurr->FillColour = fillColour;
+		s_RenderData.CircleVerticesCurr->Thickness = r;
+		s_RenderData.CircleVerticesCurr->Fade = fade;
+		s_RenderData.CircleVerticesCurr++;
+	}
 
 	s_RenderData.CircleIndexCount += 6;
 

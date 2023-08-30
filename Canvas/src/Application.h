@@ -7,7 +7,7 @@
 class Window;
 class Camera;
 
-class API Application
+class CANVAS_API Application
 {
 public:
 	static Application& Get();

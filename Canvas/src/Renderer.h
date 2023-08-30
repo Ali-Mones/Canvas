@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Core.h"
-
 #include <cstdint>
-
 #include <glm/glm.hpp>
+
+#include "Core.h"
+#include "Texture.h"
 
 class Shader;
 
@@ -19,7 +19,7 @@ public:
 
 	static void Clear(glm::vec4 colour);
 
-	static void Rect(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, float angle);
+	static void Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, Texture* texture, float tilingFactor);
 	static void Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColour, int thickness, float angle);
 	static void Quad(int p1, int p2, int p3, int p4);
 

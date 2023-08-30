@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef BUILD_DLL
-	#define API __declspec(dllexport)
+	#define CANVAS_API __declspec(dllexport)
 #else
-	#define API __declspec(dllimport)
+	#define CANVAS_API __declspec(dllimport)
 #endif

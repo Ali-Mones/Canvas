@@ -11,6 +11,7 @@ struct RectVertex
 	float ThicknessY;
 	glm::vec2 TexCoords;
 	float TexIndex;
+	float TilingFactor;
 };
 
 struct CircleVertex

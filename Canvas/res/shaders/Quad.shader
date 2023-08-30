@@ -9,6 +9,7 @@ in float a_ThicknessX;
 in float a_ThicknessY;
 in vec2 a_TexCoords;
 in float a_TexIndex;
+in float a_TilingFactor;
 
 out vec2 v_LocalPosition;
 out vec4 v_FillColour;
@@ -17,6 +18,7 @@ out float v_ThicknessX;
 out float v_ThicknessY;
 out vec2 v_TexCoords;
 out float v_TexIndex;
+out float v_TilingFactor;
 
 uniform mat4 u_ViewProjection;
 
@@ -31,6 +33,7 @@ void main()
    v_ThicknessY = a_ThicknessY;
    v_TexCoords = a_TexCoords;
    v_TexIndex = a_TexIndex;
+   v_TilingFactor = a_TilingFactor;
 }
 
 
@@ -46,18 +49,23 @@ in float v_ThicknessX;
 in float v_ThicknessY;
 in vec2 v_TexCoords;
 in float v_TexIndex;
+in float v_TilingFactor;
 
-uniform sampler2D u_Texture;
+uniform sampler2D u_Textures[32];
 
 void main()
 {
-	//int TexIndex = int(v_TextureIndex);
-	//o_Colour = v_Colour * texture(u_Texture, v_TexCoords);
+	int texIndex = int(v_TexIndex);
 
 	float err = 0.000001;
-
+	vec4 texColour = vec4(0.0);
 	if (v_LocalPosition.x <= -1.0 + v_ThicknessX + err || v_LocalPosition.x + err >= 1.0 - v_ThicknessX || v_LocalPosition.y <= -1.0 + v_ThicknessY + err || v_LocalPosition.y + err >= 1.0 - v_ThicknessY)
-		o_Colour = v_StrokeColour;
+		texColour = v_StrokeColour * texture(u_Textures[texIndex], v_TexCoords * v_TilingFactor);
 	else
-		o_Colour = v_FillColour;
+		texColour = v_FillColour * texture(u_Textures[texIndex], v_TexCoords * v_TilingFactor);
+
+	if (texColour.a == 0.0)
+		discard;
+
+	o_Colour = texColour;
 }
