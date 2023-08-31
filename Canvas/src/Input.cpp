@@ -1,18 +1,18 @@
+#include <glfw3.h>
+#include <iostream>
+
 #include "Input.h"
 #include "Application.h"
 #include "Window.h"
 
-#include <glfw3.h>
-#include <iostream>
-
 std::map<std::pair<int, int>, std::function<void()>> s_Map;
 
-bool Input::IsKeyDown(Key key)
+bool Input::IsKeyPressed(Key key)
 {
 	return glfwGetKey(Application::Get().GetWindow()->NativeWindow(), (int)key) == GLFW_PRESS;
 }
 
-bool Input::IsMouseButtonDown(MouseButton button)
+bool Input::IsMouseButtonPressed(MouseButton button)
 {
 	return glfwGetMouseButton(Application::Get().GetWindow()->NativeWindow(), (int)button) == GLFW_PRESS;
 }

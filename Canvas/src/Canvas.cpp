@@ -39,7 +39,7 @@ namespace Canvas {
 		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
 	}
 
-	void TexturedRect(int x, int y, uint32_t w, uint32_t h, Texture* texture)
+	void TexturedRect(int x, int y, uint32_t w, uint32_t h, const CanvasTexture* texture)
 	{
 		glm::vec3 pos = glm::vec3(x, y, 1);
 		glm::vec3 dims = glm::vec3(w, h, 0);
@@ -48,20 +48,22 @@ namespace Canvas {
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, texture, s_Data.TilingFactor);
+		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, texture->InternalTexture(), s_Data.TilingFactor);
 	}
 
 	void Ellipse(int x, int y, int w, int h)
 	{
 		glm::vec3 pos = glm::vec3(x, y, 0);
-		glm::vec3 dims = glm::vec3(w, h, 0);
+		glm::vec3 dims = glm::vec3(w, h == -1 ? w : h, 0);
 
 		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeColour.a);
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Ellipse(pos, dims, s_Data.FillColour, -1, 0);
-		Renderer::Ellipse(pos, dims, strokeColour, s_Data.StrokeWeight, 0);
+		if (strokeColour == glm::vec4(0))
+			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, -1, 0);
+		else
+			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, 0);
 	}
 
 	void Line(int x1, int y1, int x2, int y2)
@@ -81,8 +83,8 @@ namespace Canvas {
 		float diameter = s_Data.StrokeWeight;
 		glm::vec3 circleDims(diameter, diameter, 0);
 
-		Renderer::Ellipse(p1, circleDims, strokeColour, -1, 0);
-		Renderer::Ellipse(p2, circleDims, strokeColour, -1, 0);
+		Renderer::Ellipse(p1, circleDims, strokeColour, glm::vec4(0), -1, 0);
+		Renderer::Ellipse(p2, circleDims, strokeColour, glm::vec4(0), -1, 0);
 	}
 
 	void BezierCurve(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)

@@ -3,19 +3,29 @@
 
 using namespace Canvas;
 
-Texture* t;
+CanvasTexture* t;
 
 void Setup()
 {
 	CreateCanvas(1280, 720);
-	t = new Texture("res/textures/heart.png");
+	t = new CanvasTexture("res/textures/heart.png");
 }
 
 void Draw()
 {
-	// TODO: Point(int x, int y)
+	/*	TODO:
+			add comments to api,
+			add camera wrapper class,
+			check for performance using performance profiling tools,
+			check making circles with bezier curves,
+			text rendering,
+			finalise texture api to not depend on new keyword 
+	*/
 	Clear(255, 255, 255);
 
-	Fill(0);
-	Point(200, 200);
+	Stroke(0, 0, 0);
+	Fill(255, 0, 0);
+	StrokeWeight(50);
+	NoFill();
+	Ellipse(400, 400, 500, 200);
 }

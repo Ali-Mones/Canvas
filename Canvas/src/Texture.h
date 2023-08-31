@@ -4,18 +4,18 @@
 
 #include "Core.h"
 
-class CANVAS_API Texture
+class Texture
 {
 public:
 	Texture();
 	Texture(const std::string& filepath);
 	~Texture();
+	const uint32_t Width() const { return m_Width; }
+	const uint32_t Height() const { return m_Height; }
 	void SetData(void* data, uint32_t size);
 	void Bind(uint32_t slot = 0) const;
 	void Unbind() const;
-	const uint32_t Width() const { return m_Width; }
-	const uint32_t Height() const { return m_Height; }
-	const uint32_t Index() const { return m_RendererID; }
+	const uint32_t RendererID() const { return m_RendererID; }
 	bool operator==(const Texture& other) const { return m_RendererID == other.m_RendererID; }
 private:
 	uint32_t m_RendererID;

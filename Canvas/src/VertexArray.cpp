@@ -69,11 +69,11 @@ void VertexArray::SetLayout<CircleVertex>()
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
 
-	offset = offsetof(CircleVertex, Thickness);
+	offset = offsetof(CircleVertex, StrokeColour);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*)offset);
 
-	offset = offsetof(CircleVertex, Fade);
+	offset = offsetof(CircleVertex, Thickness);
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(CircleVertex), (const void*) offset);
 }

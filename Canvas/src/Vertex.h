@@ -19,8 +19,8 @@ struct CircleVertex
 	glm::vec4 Position;
 	glm::vec2 LocalPosition;
 	glm::vec4 FillColour;
+	glm::vec4 StrokeColour;
 	float Thickness;
-	float Fade;
 };
 
 struct LineVertex

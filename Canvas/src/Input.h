@@ -147,13 +147,11 @@ enum class Key
 	Menu = 348
 };
 
-class GLFWwindow;
-
 class CANVAS_API Input
 {
 public:
-	static bool IsKeyDown(Key key);
-	static bool IsMouseButtonDown(MouseButton button);
+	static bool IsKeyPressed(Key key);
+	static bool IsMouseButtonPressed(MouseButton button);
 	static bool IsKeyReleased(Key key);
 	static bool IsMouseButtonReleased(MouseButton button);
 	static void SetKeyCallback(Key key, Action action, std::function<void()> func);
