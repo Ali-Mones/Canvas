@@ -2,18 +2,23 @@
 
 #include "Application.h"
 #include "Input.h"
-#include "CanvasTexture.h"
+
+typedef uint32_t CanvasTexture;
 
 namespace Canvas {
 	void CANVAS_API CreateCanvas(uint32_t width, uint32_t height);
 	void CANVAS_API Clear(uint32_t r, uint32_t g, uint32_t b);
 
 	void CANVAS_API Rect(int x, int y, uint32_t w, uint32_t h);
-	void CANVAS_API TexturedRect(int x, int y, uint32_t w, uint32_t h, const CanvasTexture* texture);
+	void CANVAS_API TexturedRect(int x, int y, uint32_t w, uint32_t h, CanvasTexture texture);
 	void CANVAS_API Ellipse(int x, int y, int w, int h = -1);
 	void CANVAS_API Line(int x1, int y1, int x2, int y2);
 	void CANVAS_API BezierCurve(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 	void CANVAS_API Point(int x, int y);
+
+	CanvasTexture CANVAS_API CreateTexture(const char* filepath);	/* Create a new texture from the provided filepath to be used in the TexturedRect() function */
+																	/* WARNING: DO NOT USE IN THE DRAW()
+																	DOING SO WILL RESULT IN A NEW TEXTURE BEING CREATED EVERY FRAME */
 
 	void CANVAS_API Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
 	inline void CANVAS_API Fill(uint32_t grey) { Fill(grey, grey, grey, 255); }

@@ -41,7 +41,7 @@ struct RenderData
 	static const uint32_t MaxIndexCount = MaxRectCount * 6;
 	static const uint32_t MaxTextureSlots = 32;	// TODO: check how to make dynamic
 
-	std::array<const Texture*, MaxTextureSlots> TextureSlots;
+	const Texture* TextureSlots[32];
 	uint32_t TextureSlotIndex = 1; // index 0 = white texture
 	Texture* WhiteTexture;
 };

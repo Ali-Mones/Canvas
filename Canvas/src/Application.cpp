@@ -16,6 +16,10 @@
 #include "Camera.h"
 #include "Canvas.h"
 
+namespace Canvas {
+    void Shutdown();
+}
+
 static uint32_t s_Width = -1;
 static uint32_t s_Height = -1;
 
@@ -104,6 +108,7 @@ Application::~Application()
 {
     delete m_Window;
     Renderer::Shutdown();
+    Canvas::Shutdown();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

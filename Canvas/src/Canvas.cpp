@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <glm/gtx/compatibility.hpp>
 
@@ -5,6 +6,7 @@
 #include "Canvas.h"
 #include "Window.h"
 #include "Camera.h"
+#include "Texture.h"
 
 struct CanvasData
 {
@@ -15,6 +17,8 @@ struct CanvasData
 	uint32_t StrokeWeight = 0;
 
 	float TilingFactor = 1.0f;
+
+	std::unordered_map<uint32_t, Texture*> TexturesMap;
 };
 
 static CanvasData s_Data;
@@ -39,7 +43,7 @@ namespace Canvas {
 		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
 	}
 
-	void TexturedRect(int x, int y, uint32_t w, uint32_t h, const CanvasTexture* texture)
+	void TexturedRect(int x, int y, uint32_t w, uint32_t h, CanvasTexture texture)
 	{
 		glm::vec3 pos = glm::vec3(x, y, 1);
 		glm::vec3 dims = glm::vec3(w, h, 0);
@@ -48,7 +52,10 @@ namespace Canvas {
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, texture->InternalTexture(), s_Data.TilingFactor);
+		if (s_Data.TexturesMap.count(texture))
+			Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, s_Data.TexturesMap[texture], s_Data.TilingFactor);
+		else
+			std::cout << "No Texture found with id = " << texture << std::endl;
 	}
 
 	void Ellipse(int x, int y, int w, int h)
@@ -113,6 +120,13 @@ namespace Canvas {
 	void Point(int x, int y)
 	{
 		Rect(x, y, 2, 2);
+	}
+
+	CanvasTexture CreateTexture(const char* filepath)
+	{
+		Texture* t = new Texture(filepath);
+		s_Data.TexturesMap[t->RendererID()] = t;
+		return t->RendererID();
 	}
 
 	void Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a)
@@ -182,5 +196,11 @@ namespace Canvas {
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
 		glfwGetWindowSize(window, &width, &height);
 		return height;
+	}
+
+	void Shutdown()
+	{
+		for (auto x : s_Data.TexturesMap)
+			delete x.second;
 	}
 }
