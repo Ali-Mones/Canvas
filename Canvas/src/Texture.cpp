@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <glew.h>
+#include <filesystem>
 
 Texture::Texture()
 	: m_RendererID(0), m_Filepath(""), m_Channels(4)
@@ -23,6 +24,14 @@ Texture::Texture()
 Texture::Texture(const std::string& filepath)
 	: m_RendererID(0), m_Filepath(filepath), m_Channels(0)
 {
+	bool exists = std::filesystem::is_regular_file(filepath);
+
+	if (!exists)
+	{
+		std::cout << "File couldn't be located at " << std::filesystem::current_path().string() << '\\' << std::filesystem::path(filepath).make_preferred().string() << std::endl;
+		return;
+	}
+
 	stbi_set_flip_vertically_on_load(1);
 	stbi_uc* data = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_Channels, 4);
 

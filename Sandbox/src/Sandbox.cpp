@@ -8,14 +8,12 @@ CanvasTexture t;
 void Setup()
 {
 	Canvas::CreateCanvas(1280, 720);
-	t = Canvas::CreateTexture("res/textures/heart.png");
+	t = Canvas::CreateTexture("res/textures/sadsa.png");
 }
 
 void Draw()
 {
 	/*	TODO:
-			add comments to api,
-			add camera wrapper class,
 			check for performance using performance profiling tools,
 			check making circles with bezier curves,
 			text rendering,
@@ -25,7 +23,7 @@ void Draw()
 	Canvas::Clear(255, 255, 255);
 	Canvas::Fill(255);
 	Canvas::TexturedRect(0, 0, 90, 90, t);
-	Canvas::Fill(0);
+	Canvas::Fill(200);
 	Canvas::Ellipse(200, 200, 100, 100);
 
 	CanvasCamera::MotionSpeed(200);
