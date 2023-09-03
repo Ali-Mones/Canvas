@@ -41,11 +41,12 @@ Application::Application(const char* name, uint32_t windowWidth, uint32_t window
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_MULTISAMPLE);
 
+    glfwSwapInterval(1); // enable vsync
+    
     if (glewInit() != GLEW_OK)
     {
         std::cout << "GLEW initialisation failed\n";
@@ -54,14 +55,7 @@ Application::Application(const char* name, uint32_t windowWidth, uint32_t window
 
     std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
 
-    //Texture texture("res/textures/heart.png");
-    //texture.Bind();
-
-    //shader.SetUniform1i("u_Texture", 0);
-
     Renderer::Init();
-
-    //Renderer::RectShader()->SetUniform1i("u_Texture", 0);
 }
 
 Application& Application::Get()
@@ -113,6 +107,11 @@ Application::~Application()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwTerminate();
+}
+
+float Application::FPS()
+{
+    return ImGui::GetIO().Framerate;
 }
 
 

@@ -1,14 +1,14 @@
 #include "Canvas.h"
 #include "EntryPoint.h"
 
-using namespace Canvas;
+#include <iostream>
 
 CanvasTexture t;
 
 void Setup()
 {
-	CreateCanvas(1280, 720);
-	t = CreateTexture("res/textures/heart.png");
+	Canvas::CreateCanvas(1280, 720);
+	t = Canvas::CreateTexture("res/textures/heart.png");
 }
 
 void Draw()
@@ -19,8 +19,36 @@ void Draw()
 			check for performance using performance profiling tools,
 			check making circles with bezier curves,
 			text rendering,
+			handle errors for unfound texture file
 	*/
-	Clear(255, 255, 255);
-	Fill(255);
-	TexturedRect(200, 200, 90, 90, t);
+
+	Canvas::Clear(255, 255, 255);
+	Canvas::Fill(255);
+	Canvas::TexturedRect(0, 0, 90, 90, t);
+	Canvas::Fill(0);
+	Canvas::Ellipse(200, 200, 100, 100);
+
+	CanvasCamera::MotionSpeed(200);
+	CanvasCamera::ZoomSpeed(200);
+
+	if (Input::IsKeyPressed(Key::Space))
+		Canvas::Ellipse(Canvas::MouseX(), Canvas::MouseY(), 100, 100);
+
+	if (Input::IsKeyPressed(Key::Right))
+		CanvasCamera::MoveRight();
+
+	if (Input::IsKeyPressed(Key::Left))
+		CanvasCamera::MoveLeft();
+
+	if (Input::IsKeyPressed(Key::Up))
+		CanvasCamera::MoveUp();
+
+	if (Input::IsKeyPressed(Key::Down))
+		CanvasCamera::MoveDown();
+
+	if (Input::IsKeyPressed(Key::Q))
+		CanvasCamera::ZoomIn();
+
+	if (Input::IsKeyPressed(Key::E))
+		CanvasCamera::ZoomOut();
 }

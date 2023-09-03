@@ -58,10 +58,10 @@ namespace Canvas {
 			std::cout << "No Texture found with id = " << texture << std::endl;
 	}
 
-	void Ellipse(int x, int y, int w, int h)
+	void Ellipse(int x, int y, uint32_t w, uint32_t h)
 	{
 		glm::vec3 pos = glm::vec3(x, y, 0);
-		glm::vec3 dims = glm::vec3(w, h == -1 ? w : h, 0);
+		glm::vec3 dims = glm::vec3(w, h, 0);
 
 		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeColour.a);
 		if (!s_Data.StrokeWeight)

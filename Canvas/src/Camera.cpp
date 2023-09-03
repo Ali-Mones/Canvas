@@ -27,40 +27,40 @@ Camera& Camera::Get()
 		return Init(0, 0);
 }
 
-void Camera::MoveLeft()
+void Camera::MoveLeft(float speed)
 {
-	m_Translation.x -= 10;
+	m_Translation.x -= speed;
 	RecalculateView();
 }
 
-void Camera::MoveRight()
+void Camera::MoveRight(float speed)
 {
-	m_Translation.x += 10;
+	m_Translation.x += speed;
 	RecalculateView();
 }
 
-void Camera::MoveUp()
+void Camera::MoveUp(float speed)
 {
-	m_Translation.y += 10;
+	m_Translation.y += speed;
 	RecalculateView();
 }
 
-void Camera::MoveDown()
+void Camera::MoveDown(float speed)
 {
-	m_Translation.y -= 10;
+	m_Translation.y -= speed;
 	RecalculateView();
 }
 
-void Camera::ZoomIn()
+void Camera::ZoomIn(float speed)
 {
-	m_ZoomLevel -= 1.0f;
+	m_ZoomLevel -= speed;
 	m_ZoomLevel = std::max(0.25f, m_ZoomLevel);
 	RecalculateProjection();
 }
 
-void Camera::ZoomOut()
+void Camera::ZoomOut(float speed)
 {
-	m_ZoomLevel += 1.0f;
+	m_ZoomLevel += speed;
 	RecalculateProjection();
 }
 

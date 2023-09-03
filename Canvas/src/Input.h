@@ -1,6 +1,5 @@
 #include "Core.h"
 
-#include <map>
 #include <functional>
 
 enum class Action
