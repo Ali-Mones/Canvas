@@ -9,8 +9,8 @@
 1) Clone repo into a folder without spaces in the name (Very Important).
 2) Run Scripts/setup.bat.
 3) Enter workspace name and project name.
-4) Run Visual Studio 2022 solution.
-5) Check out Example project.
+4) Start Visual Studio 2022 with the generated solution.
+5) Check out Example Sandbox.cpp file.
 
 # API
 
