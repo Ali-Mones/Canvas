@@ -3,28 +3,35 @@
 
 #include <iostream>
 
+using namespace Canvas;
+
 CanvasTexture t;
+CanvasTexture player;
+bool hflip = false;
+bool vflip = false;
 
 void Setup()
 {
-	Canvas::CreateCanvas(1280, 720);
-	t = Canvas::CreateTexture("res/textures/sadsa.png");
+	CreateCanvas(1280, 720);
+	t = CreateTexture("res/textures/heart.png");
+	player = CreateTexture("res/textures/player.png");
 }
 
 void Draw()
 {
 	/*	TODO:
 			check for performance using performance profiling tools,
-			check making circles with bezier curves,
 			text rendering,
-			handle errors for unfound texture file
+			draw in sequence,
 	*/
 
-	Canvas::Clear(255, 255, 255);
-	Canvas::Fill(255);
-	Canvas::TexturedRect(0, 0, 90, 90, t);
-	Canvas::Fill(200);
-	Canvas::Ellipse(200, 200, 100, 100);
+	Clear(255, 255, 255);
+	Fill(255);
+
+	Input::SetKeyCallback(Key::H, Action::Press, []() { FlipTextureHorizontally(hflip = !hflip); });
+	Input::SetKeyCallback(Key::V, Action::Press, []() { FlipTextureVertically(vflip = !vflip); });
+
+	TexturedRect(0, 0, 90, 90, player);
 
 	CanvasCamera::MotionSpeed(200);
 	CanvasCamera::ZoomSpeed(200);

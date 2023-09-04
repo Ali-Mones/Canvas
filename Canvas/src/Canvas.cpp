@@ -17,6 +17,8 @@ struct CanvasData
 	uint32_t StrokeWeight = 0;
 
 	float TilingFactor = 1.0f;
+	bool HorizontalFlip = false;
+	bool VerticalFlip = false;
 
 	std::unordered_map<uint32_t, Texture*> TexturesMap;
 };
@@ -45,8 +47,14 @@ namespace Canvas {
 
 	void TexturedRect(int x, int y, uint32_t w, uint32_t h, CanvasTexture texture)
 	{
+		float width = w, height = h;
+		if (s_Data.HorizontalFlip)
+			width = -width;
+		if (s_Data.VerticalFlip)
+			height = -height;
+
 		glm::vec3 pos = glm::vec3(x, y, 1);
-		glm::vec3 dims = glm::vec3(w, h, 0);
+		glm::vec3 dims = glm::vec3(width, height, 0);
 
 		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeWeight ? s_Data.StrokeColour.a : 0);
 		if (!s_Data.StrokeWeight)
@@ -162,6 +170,16 @@ namespace Canvas {
 	void NoTextureTiling()
 	{
 		s_Data.TilingFactor = 1.0f;
+	}
+
+	void FlipTextureHorizontally(bool value)
+	{
+		s_Data.HorizontalFlip = value;
+	}
+
+	void FlipTextureVertically(bool value)
+	{
+		s_Data.VerticalFlip = value;
 	}
 
 	double MouseX()

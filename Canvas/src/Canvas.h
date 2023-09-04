@@ -107,6 +107,16 @@ namespace Canvas {
 	void CANVAS_API NoTextureTiling();
 
 	/**
+	 * @brief Set flipping of the next drawn textures about the y-axis
+	 */
+	void CANVAS_API FlipTextureHorizontally(bool value);
+
+	/**
+	 * @brief Set flipping of the next drawn textures about the x-axis
+	 */
+	void CANVAS_API FlipTextureVertically(bool value);
+
+	/**
 	 * @return x-coordinate of the mouse.
 	 */
 	double CANVAS_API MouseX();
