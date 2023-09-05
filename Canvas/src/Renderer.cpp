@@ -200,7 +200,7 @@ void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::
 	float thicknessX = (float) thickness / dimensions.x;
 	float thicknessY = (dimensions.x / dimensions.y) * thicknessX;
 
-	glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x, position.y, 0))
+	glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x, position.y, position.z))
 		* glm::rotate(glm::mat4(1), angle, { 0, 0, 1 })
 		* glm::scale(glm::mat4(1), glm::vec3(dimensions.x, dimensions.y, 0));
 
@@ -234,7 +234,7 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 		StartBatch();
 	}
 
-	glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x, position.y, 0))
+	glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x, position.y, position.z))
 		* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
 		* glm::scale(glm::mat4(1), glm::vec3(dimensions.x, dimensions.y, 0));
 

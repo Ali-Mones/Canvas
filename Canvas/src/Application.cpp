@@ -41,7 +41,7 @@ Application::Application(const char* name, uint32_t windowWidth, uint32_t window
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
-    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_MULTISAMPLE);
 

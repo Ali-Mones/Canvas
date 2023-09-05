@@ -22,16 +22,18 @@ void Draw()
 	/*	TODO:
 			check for performance using performance profiling tools,
 			text rendering,
-			draw in sequence,
 	*/
 
-	Clear(255, 255, 255);
+	Clear(0, 0, 0);
 	Fill(255);
 
 	Input::SetKeyCallback(Key::H, Action::Press, []() { FlipTextureHorizontally(hflip = !hflip); });
 	Input::SetKeyCallback(Key::V, Action::Press, []() { FlipTextureVertically(vflip = !vflip); });
 
 	TexturedRect(0, 0, 90, 90, player);
+
+	Fill(0, 255, 0);
+	Ellipse(200, 200, 90, 90);
 
 	CanvasCamera::MotionSpeed(200);
 	CanvasCamera::ZoomSpeed(200);
