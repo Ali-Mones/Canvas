@@ -23,6 +23,9 @@ public:
 	void ZoomIn(float speed);
 	void ZoomOut(float speed);
 
+	const float WindowWidth() const { return m_WindowWidth; }
+	const float WindowHeight() const { return m_WindowHeight; }
+
 	glm::vec4 GetWorldPosition(float x, float y);
 
 	const glm::mat4& View() const { return m_View; }

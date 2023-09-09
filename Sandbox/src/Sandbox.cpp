@@ -10,6 +10,8 @@ CanvasTexture player;
 bool hflip = false;
 bool vflip = false;
 
+void Input();
+
 void Setup()
 {
 	CreateCanvas(1280, 720);
@@ -20,20 +22,23 @@ void Setup()
 void Draw()
 {
 	/*	TODO:
-			check for performance using performance profiling tools,
 			text rendering,
+			add custom vector classes
 	*/
+
+	Input();
 
 	Clear(0, 0, 0);
 	Fill(255);
+	Stroke(255);
+	StrokeWeight(10);
+	BezierCurve(0, 400, 400, 0, 900, 700, 1280, 400);
+}
 
+void Input()
+{
 	Input::SetKeyCallback(Key::H, Action::Press, []() { FlipTextureHorizontally(hflip = !hflip); });
 	Input::SetKeyCallback(Key::V, Action::Press, []() { FlipTextureVertically(vflip = !vflip); });
-
-	TexturedRect(0, 0, 90, 90, player);
-
-	Fill(0, 255, 0);
-	Ellipse(200, 200, 90, 90);
 
 	CanvasCamera::MotionSpeed(200);
 	CanvasCamera::ZoomSpeed(200);

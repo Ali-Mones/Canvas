@@ -209,23 +209,17 @@ namespace Canvas {
 
 	uint32_t WindowWidth()
 	{
-		int width, height;
-		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
-		glfwGetWindowSize(window, &width, &height);
-		return width;
+		return Camera::Get().WindowWidth();
 	}
 
 	uint32_t WindowHeight()
 	{
-		int width, height;
-		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
-		glfwGetWindowSize(window, &width, &height);
-		return height;
+		return Camera::Get().WindowHeight();
 	}
 
 	void Shutdown()
 	{
-		for (auto x : s_Data.TexturesMap)
-			delete x.second;
+		for (auto texture : s_Data.TexturesMap)
+			delete texture.second;
 	}
 }
