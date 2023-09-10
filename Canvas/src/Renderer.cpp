@@ -1,8 +1,12 @@
+#include "Renderer.h"
+
+#include <iostream>
 #include <glew.h>
 #include <glm/ext/matrix_transform.hpp>
-#include <array>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <stb_image_write/stb_image_write.h>
 
-#include "Renderer.h"
 #include "Shader.h"
 #include "VertexArray.h"
 #include "IndexBuffer.h"
@@ -10,6 +14,13 @@
 #include "Vertex.h"
 #include "Texture.h"
 
+struct FontCharacter
+{
+	uint32_t Offset;
+	glm::ivec2 Size;
+	glm::ivec2 Bearing;
+	uint32_t Advance;
+};
 
 struct RenderData
 {
@@ -29,8 +40,16 @@ struct RenderData
 	CircleVertex* CircleVerticesCurr;
 	Shader* CircleShader;
 
-	glm::vec4 UnitRectVertices[4];
+	uint32_t TextIndexCount = 0;
+	VertexArray* TextVertexArray;
+	VertexBuffer* TextVertexBuffer;
+	TextVertex* TextVerticesBase;
+	TextVertex* TextVerticesCurr;
+	Shader* TextShader;
+	Texture* FontAtlas;
+	std::unordered_map<char, FontCharacter> CharactersMap;
 
+	glm::vec4 UnitRectVertices[4];
 
 	/* Statistics */
 	uint32_t RectCount = 0;
@@ -66,6 +85,14 @@ void Renderer::Init()
 	s_RenderData.CircleVerticesBase = new CircleVertex[s_RenderData.MaxVertexCount];
 	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 
+	// Text initialisation
+	s_RenderData.TextShader = new Shader("res/shaders/Text.shader");
+	s_RenderData.TextVertexArray = new VertexArray();
+	s_RenderData.TextVertexBuffer = new VertexBuffer(s_RenderData.MaxVertexCount * sizeof(TextVertex));
+	s_RenderData.TextVertexArray->SetLayout<TextVertex>();
+	s_RenderData.TextVerticesBase = new TextVertex[s_RenderData.MaxVertexCount];
+	s_RenderData.TextVerticesCurr = s_RenderData.TextVerticesBase;
+
 	// Index buffer initialisation
 	std::vector<uint32_t> indices;
 	for (int i = 0; i < s_RenderData.MaxRectCount; i++)
@@ -95,6 +122,81 @@ void Renderer::Init()
 		samplers[i] = i;
 	
 	s_RenderData.RectShader->SetUniformArray1i("u_Textures", samplers, s_RenderData.MaxTextureSlots);
+
+	// Text initialisation
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "Could not init FreeType Library\n";
+		return;
+	}
+
+	FT_Face face;
+	std::string filepath = "../Canvas/res/fonts/Arial.ttf";
+	if (FT_New_Face(ft, filepath.c_str(), 0, &face))
+	{
+		std::cout << "Could not load font " << filepath << std::endl;
+		return;
+	}
+
+	uint32_t fontSize = 512;
+	FT_Set_Pixel_Sizes(face, 0, fontSize);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	uint32_t textureWidth = 0;
+	uint32_t textureHeight = 0;
+
+	int chars = 128;
+	int base = 0;
+
+	for (int c = base; c < base + chars; c++)
+	{
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "Could not load character " << c << std::endl;
+			continue;
+		}
+
+		textureWidth += face->glyph->bitmap.width;
+		textureHeight = std::max(textureHeight, face->glyph->bitmap.rows);
+	}
+
+	uint8_t* buffer = new uint8_t[textureWidth * textureHeight + 10 * 128 * textureHeight];
+	memset(buffer, 0, textureWidth * textureHeight + 10 * 128 * textureHeight);
+	uint32_t offset = 0;
+	for (int c = base; c < base + chars; c++)
+	{
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "Could not load character " << c << std::endl;
+			continue;
+		}
+
+		FontCharacter fc =
+		{
+			.Offset = offset,
+			.Size = { face->glyph->bitmap.width, face->glyph->bitmap.rows },
+			.Bearing = { face->glyph->bitmap_left, face->glyph->bitmap_top },
+			.Advance = (uint32_t)face->glyph->advance.x
+		};
+
+		s_RenderData.CharactersMap[c] = fc;
+
+		for (int i = 0; i < face->glyph->bitmap.rows; i++)
+			memcpy(&buffer[i * textureWidth + offset], face->glyph->bitmap.buffer + i * face->glyph->bitmap.width, face->glyph->bitmap.width);
+
+		offset += face->glyph->bitmap.width;
+		offset += 10; // add space between characters
+	}
+
+	s_RenderData.FontAtlas = new Texture(buffer, textureWidth, textureHeight, 1);
+
+	s_RenderData.TextShader->SetUniform1i("u_Texture", 0);
+	
+	delete[] buffer;
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
 }
 
 void Renderer::StartBatch()
@@ -104,6 +206,9 @@ void Renderer::StartBatch()
 
 	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 	s_RenderData.CircleIndexCount = 0;
+
+	s_RenderData.TextVerticesCurr = s_RenderData.TextVerticesBase;
+	s_RenderData.TextIndexCount = 0;
 
 	s_RenderData.TextureSlotIndex = 1;
 }
@@ -135,6 +240,18 @@ void Renderer::Flush()
 		glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
 		s_RenderData.DrawCalls++;
 	}
+
+	if (s_RenderData.TextVerticesBase != s_RenderData.TextVerticesCurr)
+	{
+		uint32_t count = s_RenderData.TextVerticesCurr - s_RenderData.TextVerticesBase;
+		s_RenderData.TextVertexBuffer->SetBuffer(count * sizeof(TextVertex), s_RenderData.TextVerticesBase);
+		s_RenderData.TextVertexArray->Bind();
+		s_RenderData.TextShader->Bind();
+		s_RenderData.FontAtlas->Bind();
+		s_RenderData.RectIndexBuffer->Bind();
+		glDrawElements(GL_TRIANGLES, s_RenderData.TextIndexCount, GL_UNSIGNED_INT, nullptr);
+		s_RenderData.DrawCalls++;
+	}
 }
 
 void Renderer::Shutdown()
@@ -150,6 +267,11 @@ void Renderer::Shutdown()
 	delete s_RenderData.CircleVertexBuffer;
 	delete s_RenderData.CircleShader;
 	delete s_RenderData.CircleVerticesBase;
+
+	delete s_RenderData.TextVertexArray;
+	delete s_RenderData.TextVertexBuffer;
+	delete s_RenderData.TextShader;
+	delete s_RenderData.TextVerticesBase;
 
 	delete s_RenderData.WhiteTexture;
 }
@@ -258,6 +380,70 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 	s_RenderData.RectCount++;
 }
 
+void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& colour, const std::string& text, uint32_t fontSize)
+{
+	float scale = fontSize / 512.0f;
+	float width = 0;
+	float height = 0;
+	float maxBearing = 0;
+	float maxUnderside = 0;
+	for (auto c : text)
+	{
+		FontCharacter& fc = s_RenderData.CharactersMap[c];
+		width += fc.Advance / 64 * scale;
+		maxBearing = std::max(maxBearing, fc.Bearing.y * scale);
+		maxUnderside = std::max(maxUnderside, scale * (fc.Size.y - fc.Bearing.y));
+	}
+
+	height = maxBearing + maxUnderside;
+
+	float x = 0;
+	float y = 0;
+
+	for (auto c : text)
+	{
+		uint32_t vertexCount = s_RenderData.TextVerticesCurr - s_RenderData.TextVerticesBase;
+		if (vertexCount == s_RenderData.MaxVertexCount)
+		{
+			Flush();
+			StartBatch();
+		}
+
+		FontCharacter& fc = s_RenderData.CharactersMap[c];
+		float xpos = x + fc.Bearing.x * scale + fc.Size.x * scale / 2;
+		float ypos = y + fc.Bearing.y * scale - fc.Size.y * scale / 2;
+
+		glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x + xpos - width / 2, position.y + ypos - height / 2, position.z))
+			* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
+			* glm::scale(glm::mat4(1), glm::vec3(fc.Size.x * scale, fc.Size.y * scale, 0));
+
+
+		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[0];
+		s_RenderData.TextVerticesCurr->Colour = colour;
+		s_RenderData.TextVerticesCurr->TexCoords = { (float)fc.Offset / s_RenderData.FontAtlas->Width(), 1.0f - (float)fc.Size.y / s_RenderData.FontAtlas->Height() };
+		s_RenderData.TextVerticesCurr++;
+
+		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[1];
+		s_RenderData.TextVerticesCurr->Colour = colour;
+		s_RenderData.TextVerticesCurr->TexCoords = { (float)(fc.Offset + fc.Size.x) / s_RenderData.FontAtlas->Width(), 1.0f - (float)fc.Size.y / s_RenderData.FontAtlas->Height() };
+		s_RenderData.TextVerticesCurr++;
+
+		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[2];
+		s_RenderData.TextVerticesCurr->Colour = colour;
+		s_RenderData.TextVerticesCurr->TexCoords = { (float)(fc.Offset + fc.Size.x) / s_RenderData.FontAtlas->Width(), 1.0f };
+		s_RenderData.TextVerticesCurr++;
+
+		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[3];
+		s_RenderData.TextVerticesCurr->Colour = colour;
+		s_RenderData.TextVerticesCurr->TexCoords = { (float)fc.Offset / s_RenderData.FontAtlas->Width(), 1.0f };
+		s_RenderData.TextVerticesCurr++;
+
+		x += fc.Advance * scale / 64;
+
+		s_RenderData.TextIndexCount += 6;
+	}
+}
+
 uint32_t Renderer::QuadCount()
 {
 	return s_RenderData.RectCount;
@@ -276,4 +462,9 @@ Shader* Renderer::RectShader()
 Shader* Renderer::CircleShader()
 {
 	return s_RenderData.CircleShader;
+}
+
+Shader* Renderer::TextShader()
+{
+	return s_RenderData.TextShader;
 }

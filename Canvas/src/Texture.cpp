@@ -21,6 +21,37 @@ Texture::Texture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
+Texture::Texture(void* data, uint32_t width, uint32_t height, uint32_t channels)
+	: m_RendererID(0), m_Filepath(""), m_Width(width), m_Height(height), m_Channels(channels)
+{
+	switch (channels)
+	{
+		case 1:
+			m_InternalFormat = GL_R8;
+			m_DataFormat = GL_RED;
+			break;
+		case 3:
+			m_InternalFormat = GL_RGB8;
+			m_DataFormat = GL_RGB;
+			break;
+		case 4:
+			m_InternalFormat = GL_RGBA8;
+			m_DataFormat = GL_RGBA;
+			break;
+	}
+
+	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+}
+
 Texture::Texture(const std::string& filepath)
 	: m_RendererID(0), m_Filepath(filepath), m_Channels(0)
 {

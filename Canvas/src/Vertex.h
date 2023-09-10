@@ -23,8 +23,9 @@ struct CircleVertex
 	float Thickness;
 };
 
-struct LineVertex
+struct TextVertex
 {
 	glm::vec4 Position;
 	glm::vec4 Colour;
+	glm::dvec2 TexCoords;
 };

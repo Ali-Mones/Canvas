@@ -22,17 +22,14 @@ void Setup()
 void Draw()
 {
 	/*	TODO:
-			text rendering,
-			add custom vector classes
+			add custom vector classes + adding API changes for them
+			add PositionMode() function
 	*/
 
 	Input();
-
-	Clear(0, 0, 0);
-	Fill(255);
-	Stroke(255);
-	StrokeWeight(10);
-	BezierCurve(0, 400, 400, 0, 900, 700, 1280, 400);
+	Clear(24, 24, 24);
+	Stroke(0);
+	Text("help me god pls", 0, 0);
 }
 
 void Input()

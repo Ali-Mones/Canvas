@@ -86,6 +86,7 @@ void Application::Run(std::function<void()> drawFun)
 
         Renderer::RectShader()->SetUniformMat4f("u_ViewProjection", vp);
         Renderer::CircleShader()->SetUniformMat4f("u_ViewProjection", vp);
+        Renderer::TextShader()->SetUniformMat4f("u_ViewProjection", vp);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

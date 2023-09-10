@@ -14,13 +14,15 @@ struct CanvasData
 	glm::vec4 FillColour = glm::vec4(1);
 
 	glm::vec4 StrokeColour = glm::vec4(1);
-	uint32_t StrokeWeight = 0;
+	uint32_t StrokeWeight = 1;
 
 	float Z = -1.0f;
 
 	float TilingFactor = 1.0f;
 	bool HorizontalFlip = false;
 	bool VerticalFlip = false;
+
+	uint32_t FontSize = 18;
 
 	std::unordered_map<uint32_t, Texture*> TexturesMap;
 };
@@ -32,7 +34,7 @@ namespace Canvas {
 
 	void Clear(uint32_t r, uint32_t g, uint32_t b)
 	{
-		Renderer::Clear(glm::vec4(r / 255, g / 255, b / 255, 1));
+		Renderer::Clear(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, 1));
 		s_Data.Z = -1.0f;
 	}
 
@@ -132,9 +134,23 @@ namespace Canvas {
 		}
 	}
 
+	void FontSize(uint32_t size)
+	{
+		s_Data.FontSize = size;
+	}
+
+	void Text(const char* text, int x, int y)
+	{
+		glm::vec3 pos(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
+		Renderer::Text(pos, 0.0f, s_Data.StrokeColour, text, s_Data.FontSize);
+	}
+
 	void Point(int x, int y)
 	{
+		glm::vec4 oldFill = s_Data.FillColour;
+		s_Data.FillColour = s_Data.StrokeColour;
 		Rect(x, y, 2, 2);
+		s_Data.FillColour = oldFill;
 	}
 
 	CanvasTexture CreateTexture(const char* filepath)

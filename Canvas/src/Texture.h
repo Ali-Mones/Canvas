@@ -8,6 +8,7 @@ class Texture
 {
 public:
 	Texture();
+	Texture(void* data, uint32_t width, uint32_t height, uint32_t channels);
 	Texture(const std::string& filepath);
 	~Texture();
 	const uint32_t Width() const { return m_Width; }

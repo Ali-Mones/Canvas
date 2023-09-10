@@ -79,16 +79,20 @@ void VertexArray::SetLayout<CircleVertex>()
 }
 
 template<>
-void VertexArray::SetLayout<LineVertex>()
+void VertexArray::SetLayout<TextVertex>()
 {
 	Bind();
-	uint32_t offset = offsetof(LineVertex, Position);
+	uint32_t offset = offsetof(TextVertex, Position);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (const void*) offset);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (const void*)offset);
 
-	offset = offsetof(LineVertex, Colour);
+	offset = offsetof(TextVertex, Colour);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(LineVertex), (const void*) offset);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (const void*)offset);
+
+	offset = offsetof(TextVertex, TexCoords);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_DOUBLE, GL_FALSE, sizeof(TextVertex), (const void*)offset);
 }
 
 void VertexArray::Bind()
