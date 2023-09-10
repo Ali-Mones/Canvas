@@ -1,4 +1,5 @@
-/.vs/
+.vs/
+.cmake/
 /.vscode/
 /bin/
 /bin-int/
