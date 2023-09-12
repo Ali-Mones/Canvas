@@ -1,5 +1,6 @@
-/.vs/
-/.vscode/
+.vs/
+.cmake/
+.vscode/
 /bin/
 /bin-int/
 *.sln
