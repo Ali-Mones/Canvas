@@ -1,0 +1,3 @@
+[submodule "Canvas/vendor/msdf-atlas-gen"]
+	path = Canvas/vendor/msdf-atlas-gen
+	url = https://github.com/TheCherno/msdf-atlas-gen.git

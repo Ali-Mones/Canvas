@@ -6,14 +6,26 @@ workspace "OpenGL"
     architecture "x64"
     startproject "Sandbox"
 
+    flags {
+        "MultiProcessorCompile"
+    }
+
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+group "Dependencies"
+    include "Canvas/vendor/msdf-atlas-gen"
+group ""
+
+    
 project "Canvas"
     location "Canvas"
     kind "SharedLib"
     staticruntime "off"
     files { "%{prj.location}/**.hpp", "%{prj.location}/**.cpp", "%{prj.location}/**.h" }
 
-    targetdir "%{wks.location}/bin/%{cfg.buildcfg}/%{prj.name}"
-    objdir "%{wks.location}/bin-int/%{cfg.buildcfg}/%{prj.name}"
+
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
     postbuildcommands {
         "{COPY} %{wks.location}bin\\%{cfg.buildcfg}\\%{prj.name}\\Canvas.dll %{wks.location}bin\\%{cfg.buildcfg}\\Sandbox\\"
@@ -31,6 +43,7 @@ project "Canvas"
         "opengl32",
         "glew32s",
         "freetyped",
+        "msdf-atlas-gen"
     }
 
     libdirs {
@@ -45,6 +58,8 @@ project "Canvas"
         "%{prj.location}/vendor/GLFW/include",
         "%{prj.location}/vendor/glew-2.1.0/include/GL",
         "%{prj.location}/vendor/freetype-2.13.2/include",
+        "%{prj.location}/vendor/msdf-atlas-gen/msdf-atlas-gen",
+        "%{prj.location}/vendor/msdf-atlas-gen/msdfgen",
     }
 
     filter "configurations:Debug"
@@ -60,8 +75,8 @@ project "Sandbox"
     kind "ConsoleApp"
     files { "%{prj.location}/**.hpp", "%{prj.location}/**.cpp", "%{prj.location}/**.h" }
 
-    targetdir "%{wks.location}/bin/%{cfg.buildcfg}/%{prj.name}"
-    objdir "%{wks.location}/bin-int/%{cfg.buildcfg}/%{prj.name}"
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
     links {
         "Canvas"
