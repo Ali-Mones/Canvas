@@ -6,9 +6,16 @@ workspace "OpenGL"
     architecture "x64"
     startproject "Sandbox"
 
+    flags {
+        "MultiProcessorCompile"
+    }
+
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
 group "Dependencies"
     include "Canvas/vendor/msdf-atlas-gen"
 group ""
+
     
 project "Canvas"
     location "Canvas"
@@ -17,8 +24,8 @@ project "Canvas"
     files { "%{prj.location}/**.hpp", "%{prj.location}/**.cpp", "%{prj.location}/**.h" }
 
 
-    targetdir "%{wks.location}/bin/%{cfg.buildcfg}/%{prj.name}"
-    objdir "%{wks.location}/bin-int/%{cfg.buildcfg}/%{prj.name}"
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
     postbuildcommands {
         "{COPY} %{wks.location}bin\\%{cfg.buildcfg}\\%{prj.name}\\Canvas.dll %{wks.location}bin\\%{cfg.buildcfg}\\Sandbox\\"
@@ -68,8 +75,8 @@ project "Sandbox"
     kind "ConsoleApp"
     files { "%{prj.location}/**.hpp", "%{prj.location}/**.cpp", "%{prj.location}/**.h" }
 
-    targetdir "%{wks.location}/bin/%{cfg.buildcfg}/%{prj.name}"
-    objdir "%{wks.location}/bin-int/%{cfg.buildcfg}/%{prj.name}"
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
     links {
         "Canvas"
