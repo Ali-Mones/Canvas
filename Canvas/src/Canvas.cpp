@@ -233,6 +233,11 @@ namespace Canvas {
 		return Camera::Get().WindowHeight();
 	}
 
+	float FontLineHeight()
+	{
+		return s_Data.FontSize * Renderer::LineHeight();
+	}
+
 	void Shutdown()
 	{
 		for (auto texture : s_Data.TexturesMap)

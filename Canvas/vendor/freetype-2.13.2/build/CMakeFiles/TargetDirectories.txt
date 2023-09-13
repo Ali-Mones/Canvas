@@ -1,5 +1,0 @@
-C:/Users/MSI/Desktop/ft2132/freetype-2.13.2/build/CMakeFiles/freetype.dir
-C:/Users/MSI/Desktop/ft2132/freetype-2.13.2/build/CMakeFiles/PACKAGE.dir
-C:/Users/MSI/Desktop/ft2132/freetype-2.13.2/build/CMakeFiles/INSTALL.dir
-C:/Users/MSI/Desktop/ft2132/freetype-2.13.2/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/MSI/Desktop/ft2132/freetype-2.13.2/build/CMakeFiles/ZERO_CHECK.dir

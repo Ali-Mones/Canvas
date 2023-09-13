@@ -29,4 +29,6 @@ public:
 	static Shader* RectShader();
 	static Shader* CircleShader();
 	static Shader* TextShader();
+
+	static double LineHeight();
 };

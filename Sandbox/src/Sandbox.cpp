@@ -24,12 +24,15 @@ void Draw()
 	/*	TODO:
 			add custom vector classes + adding API changes for them
 			add PositionMode() function
+			move text/font stuff into own file && add api for them like textures
 	*/
 
 	Input();
 	Clear(24, 24, 24);
-	Stroke(0);
-	Text("help me god pls", 0, 0);
+	Stroke(255);
+	FontSize(24);
+	Text("today we kill your face", 0, 0);
+	Text("hello my friends", 0, FontLineHeight());
 }
 
 void Input()
