@@ -42,14 +42,12 @@ project "Canvas"
         "glfw3dll",
         "opengl32",
         "glew32s",
-        "freetyped",
         "msdf-atlas-gen"
     }
 
     libdirs {
         "%{prj.location}/vendor/GLFW/lib",
         "%{prj.location}/vendor/glew-2.1.0/lib/Release/x64",
-        "%{prj.location}/vendor/freetype-2.13.2/build/Debug",
     }
 
     includedirs { 
@@ -57,7 +55,6 @@ project "Canvas"
         "%{prj.location}/vendor",
         "%{prj.location}/vendor/GLFW/include",
         "%{prj.location}/vendor/glew-2.1.0/include/GL",
-        "%{prj.location}/vendor/freetype-2.13.2/include",
         "%{prj.location}/vendor/msdf-atlas-gen/msdf-atlas-gen",
         "%{prj.location}/vendor/msdf-atlas-gen/msdfgen",
         "%{prj.location}/vendor/msdf-atlas-gen/msdfgen/include",
