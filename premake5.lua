@@ -28,7 +28,7 @@ project "Canvas"
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
     postbuildcommands {
-        "{COPY} %{wks.location}bin\\%{cfg.buildcfg}\\%{prj.name}\\Canvas.dll %{wks.location}bin\\%{cfg.buildcfg}\\Sandbox\\"
+        "{COPY} %{wks.location}bin\\".. outputdir .."\\%{prj.name}\\Canvas.dll %{wks.location}bin\\".. outputdir .."\\Sandbox\\"
     }
 
     defines {
@@ -60,6 +60,7 @@ project "Canvas"
         "%{prj.location}/vendor/freetype-2.13.2/include",
         "%{prj.location}/vendor/msdf-atlas-gen/msdf-atlas-gen",
         "%{prj.location}/vendor/msdf-atlas-gen/msdfgen",
+        "%{prj.location}/vendor/msdf-atlas-gen/msdfgen/include",
     }
 
     filter "configurations:Debug"

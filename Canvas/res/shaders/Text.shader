@@ -29,8 +29,24 @@ in vec2 v_TexCoords;
 
 uniform sampler2D u_Texture;
 
+float screenPxRange()
+{
+	const float pxRange = 2.0; // set to distance field's pixel range
+   vec2 unitRange = vec2(pxRange) / vec2(textureSize(u_Texture, 0));
+   vec2 screenTexSize = vec2(1.0) / fwidth(v_TexCoords);
+   return max(0.5 * dot(unitRange, screenTexSize), 1.0);
+}
+
+float median(float r, float g, float b)
+{
+   return max(min(r, g), min(max(r, g), b));
+}
+
 void main()
 {
-	vec4 texColour = v_Colour * texture(u_Texture, vec2(v_TexCoords.x, 1.0f - v_TexCoords.y)).r;
-	o_Colour = texColour;
+   vec3 msd = texture(u_Texture, v_TexCoords).rgb;
+   float sd = median(msd.r, msd.g, msd.b);
+   float screenPxDistance = screenPxRange() * (sd - 0.5);
+   float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+   o_Colour = mix(vec4(0.0), v_Colour, opacity);
 }

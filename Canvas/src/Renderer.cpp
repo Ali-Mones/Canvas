@@ -14,6 +14,10 @@
 #include "Vertex.h"
 #include "Texture.h"
 
+#include <msdfgen.h>
+#include <msdfgen-ext.h>
+#include <msdf-atlas-gen.h>
+
 struct FontCharacter
 {
 	uint32_t Offset;
@@ -47,6 +51,8 @@ struct RenderData
 	TextVertex* TextVerticesCurr;
 	Shader* TextShader;
 	Texture* FontAtlas;
+	msdf_atlas::FontGeometry* FontGeometry;
+	std::vector<msdf_atlas::GlyphGeometry> Glyphs;
 	std::unordered_map<char, FontCharacter> CharactersMap;
 
 	glm::vec4 UnitRectVertices[4];
@@ -124,79 +130,51 @@ void Renderer::Init()
 	s_RenderData.RectShader->SetUniformArray1i("u_Textures", samplers, s_RenderData.MaxTextureSlots);
 
 	// Text initialisation
-	FT_Library ft;
-	if (FT_Init_FreeType(&ft))
-	{
-		std::cout << "Could not init FreeType Library\n";
-		return;
-	}
-
-	FT_Face face;
-	std::string filepath = "../Canvas/res/fonts/Arial.ttf";
-	if (FT_New_Face(ft, filepath.c_str(), 0, &face))
-	{
-		std::cout << "Could not load font " << filepath << std::endl;
-		return;
-	}
-
-	uint32_t fontSize = 512;
-	FT_Set_Pixel_Sizes(face, 0, fontSize);
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	uint32_t textureWidth = 0;
-	uint32_t textureHeight = 0;
-
-	int chars = 128;
-	int base = 0;
-
-	for (int c = base; c < base + chars; c++)
-	{
-		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-		{
-			std::cout << "Could not load character " << c << std::endl;
-			continue;
-		}
-
-		textureWidth += face->glyph->bitmap.width;
-		textureHeight = std::max(textureHeight, face->glyph->bitmap.rows);
-	}
-
-	uint8_t* buffer = new uint8_t[textureWidth * textureHeight + 10 * 128 * textureHeight];
-	memset(buffer, 0, textureWidth * textureHeight + 10 * 128 * textureHeight);
-	uint32_t offset = 0;
-	for (int c = base; c < base + chars; c++)
-	{
-		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-		{
-			std::cout << "Could not load character " << c << std::endl;
-			continue;
-		}
-
-		FontCharacter fc =
-		{
-			.Offset = offset,
-			.Size = { face->glyph->bitmap.width, face->glyph->bitmap.rows },
-			.Bearing = { face->glyph->bitmap_left, face->glyph->bitmap_top },
-			.Advance = (uint32_t)face->glyph->advance.x
-		};
-
-		s_RenderData.CharactersMap[c] = fc;
-
-		for (int i = 0; i < face->glyph->bitmap.rows; i++)
-			memcpy(&buffer[i * textureWidth + offset], face->glyph->bitmap.buffer + i * face->glyph->bitmap.width, face->glyph->bitmap.width);
-
-		offset += face->glyph->bitmap.width;
-		offset += 10; // add space between characters
-	}
-
-	s_RenderData.FontAtlas = new Texture(buffer, textureWidth, textureHeight, 1);
-
 	s_RenderData.TextShader->SetUniform1i("u_Texture", 0);
-	
-	delete[] buffer;
-	FT_Done_Face(face);
-	FT_Done_FreeType(ft);
+
+	// Initialize instance of FreeType library
+	if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype())
+	{
+		// Load font file
+		if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:/Windows/Fonts/Arial.ttf"))
+		{
+			// Storage for glyph geometry and their coordinates in the atlas
+			s_RenderData.FontGeometry = new msdf_atlas::FontGeometry(&s_RenderData.Glyphs);
+			int loaded = s_RenderData.FontGeometry->loadCharset(font, 1.0, msdf_atlas::Charset::ASCII);
+			assert(loaded == 95);
+
+			const double maxCornerAngle = 3.0;
+			for (msdf_atlas::GlyphGeometry& glyph : s_RenderData.Glyphs)
+				glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, maxCornerAngle, 0);
+
+			// TightAtlasPacker class computes the layout of the atlas.
+			msdf_atlas::TightAtlasPacker packer;
+			packer.setDimensionsConstraint(msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
+			packer.setScale(60.0);
+			packer.setPixelRange(1.0);
+			packer.setMiterLimit(1.0);
+			packer.setPadding(0.0);
+
+			// Compute atlas layout - pack glyphs
+			int remaining = packer.pack(s_RenderData.Glyphs.data(), s_RenderData.Glyphs.size());
+			assert(remaining == 0);
+
+			// Get final atlas dimensions
+			int width, height;
+			packer.getDimensions(width, height);
+
+			msdf_atlas::ImmediateAtlasGenerator<float, 3, msdf_atlas::msdfGenerator, msdf_atlas::BitmapAtlasStorage<msdfgen::byte, 3>> generator(width, height);
+			generator.setAttributes(msdf_atlas::GeneratorAttributes());
+			generator.setThreadCount(4);
+			generator.generate(s_RenderData.Glyphs.data(), s_RenderData.Glyphs.size());
+
+			msdfgen::BitmapConstRef<msdfgen::byte, 3> bitmap = (msdfgen::BitmapConstRef<msdfgen::byte, 3>) generator.atlasStorage();
+			s_RenderData.FontAtlas = new Texture((void*)bitmap.pixels, width, height, 3);
+
+			msdfgen::destroyFont(font);
+		}
+		msdfgen::deinitializeFreetype(ft);
+	}
 }
 
 void Renderer::StartBatch()
@@ -226,6 +204,7 @@ void Renderer::Flush()
 		s_RenderData.RectVertexArray->Bind();
 		s_RenderData.RectShader->Bind();
 		s_RenderData.RectIndexBuffer->Bind();
+		s_RenderData.FontAtlas->Bind();
 		glDrawElements(GL_TRIANGLES, s_RenderData.RectIndexCount, GL_UNSIGNED_INT, nullptr);
 		s_RenderData.DrawCalls++;
 	}
@@ -272,6 +251,7 @@ void Renderer::Shutdown()
 	delete s_RenderData.TextVertexBuffer;
 	delete s_RenderData.TextShader;
 	delete s_RenderData.TextVerticesBase;
+	delete s_RenderData.FontAtlas;
 
 	delete s_RenderData.WhiteTexture;
 }
@@ -382,65 +362,92 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 
 void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& colour, const std::string& text, uint32_t fontSize)
 {
-	float scale = fontSize / 512.0f;
-	float width = 0;
-	float height = 0;
-	float maxBearing = 0;
-	float maxUnderside = 0;
-	for (auto c : text)
+	const auto& metrics = s_RenderData.FontGeometry->getMetrics();
+
+	double fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
+	double x = 0, y = 0;
+	double textWidth = 0.0;
+	double texelWidth = 1.0 / s_RenderData.FontAtlas->Width();
+	double texelHeight = 1.0 / s_RenderData.FontAtlas->Height();
+
+	for (const char& c : text)
 	{
-		FontCharacter& fc = s_RenderData.CharactersMap[c];
-		width += fc.Advance / 64 * scale;
-		maxBearing = std::max(maxBearing, fc.Bearing.y * scale);
-		maxUnderside = std::max(maxUnderside, scale * (fc.Size.y - fc.Bearing.y));
+		if (c == '\r')
+			continue;
+		if (c == '\n')
+		{
+			textWidth = std::max(textWidth, x);
+			x = 0;
+			y -= fsScale * metrics.lineHeight;
+			continue;
+		}
+		const msdf_atlas::GlyphGeometry* glyph = s_RenderData.FontGeometry->getGlyph(c);
+		if (glyph)
+		{
+			double advance = glyph->getAdvance();
+			s_RenderData.FontGeometry->getAdvance(advance, c, *((&c) + 1));
+			x += fsScale * advance;
+		}
 	}
 
-	height = maxBearing + maxUnderside;
+	textWidth = std::max(x, textWidth);
+	double textHeight = fsScale * metrics.lineHeight;
 
-	float x = 0;
-	float y = 0;
-
-	for (auto c : text)
+	for (const char& c : text)
 	{
-		uint32_t vertexCount = s_RenderData.TextVerticesCurr - s_RenderData.TextVerticesBase;
-		if (vertexCount == s_RenderData.MaxVertexCount)
+		if (c == '\r')
+			continue;
+		if (c == '\n')
 		{
-			Flush();
-			StartBatch();
+			textWidth = std::max(textWidth, x);
+			x = 0;
+			y -= fsScale * metrics.lineHeight;
+			continue;
 		}
+		const msdf_atlas::GlyphGeometry* glyph = s_RenderData.FontGeometry->getGlyph(c);
+		if (glyph)
+		{
+			if (!glyph->isWhitespace())
+			{
+				double pl, pb, pr, pt;
+				double il, ib, ir, it;
+				glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+				glyph->getQuadAtlasBounds(il, ib, ir, it);
+				pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+				pl += x, pb += y, pr += x, pt += y;
+				il *= texelWidth, ib *= texelHeight, ir *= texelWidth, it *= texelHeight;
 
-		FontCharacter& fc = s_RenderData.CharactersMap[c];
-		float xpos = x + fc.Bearing.x * scale + fc.Size.x * scale / 2;
-		float ypos = y + fc.Bearing.y * scale - fc.Size.y * scale / 2;
+				glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x - fontSize * textWidth * 1.5, position.y - fontSize * textHeight / 3, position.z))
+					* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
+					* glm::scale(glm::mat4(1), glm::vec3(fontSize, fontSize, 0));
 
-		glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x + xpos - width / 2, position.y + ypos - height / 2, position.z))
-			* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
-			* glm::scale(glm::mat4(1), glm::vec3(fc.Size.x * scale, fc.Size.y * scale, 0));
+				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pl, pb, 0.0f, 1.0f);
+				s_RenderData.TextVerticesCurr->Colour = colour;
+				s_RenderData.TextVerticesCurr->TexCoords = { il, ib };
+				s_RenderData.TextVerticesCurr++;
 
+				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pr, pb, 0.0f, 1.0f);
+				s_RenderData.TextVerticesCurr->Colour = colour;
+				s_RenderData.TextVerticesCurr->TexCoords = { ir, ib };
+				s_RenderData.TextVerticesCurr++;
 
-		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[0];
-		s_RenderData.TextVerticesCurr->Colour = colour;
-		s_RenderData.TextVerticesCurr->TexCoords = { (float)fc.Offset / s_RenderData.FontAtlas->Width(), 1.0f - (float)fc.Size.y / s_RenderData.FontAtlas->Height() };
-		s_RenderData.TextVerticesCurr++;
+				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pr, pt, 0.0f, 1.0f);
+				s_RenderData.TextVerticesCurr->Colour = colour;
+				s_RenderData.TextVerticesCurr->TexCoords = { ir, it };
+				s_RenderData.TextVerticesCurr++;
 
-		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[1];
-		s_RenderData.TextVerticesCurr->Colour = colour;
-		s_RenderData.TextVerticesCurr->TexCoords = { (float)(fc.Offset + fc.Size.x) / s_RenderData.FontAtlas->Width(), 1.0f - (float)fc.Size.y / s_RenderData.FontAtlas->Height() };
-		s_RenderData.TextVerticesCurr++;
+				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pl, pt, 0.0f, 1.0f);
+				s_RenderData.TextVerticesCurr->Colour = colour;
+				s_RenderData.TextVerticesCurr->TexCoords = { il, it };
+				s_RenderData.TextVerticesCurr++;
+			}
 
-		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[2];
-		s_RenderData.TextVerticesCurr->Colour = colour;
-		s_RenderData.TextVerticesCurr->TexCoords = { (float)(fc.Offset + fc.Size.x) / s_RenderData.FontAtlas->Width(), 1.0f };
-		s_RenderData.TextVerticesCurr++;
+			double advance = glyph->getAdvance();
+			s_RenderData.FontGeometry->getAdvance(advance, c, *((&c) + 1));
+			x += fsScale * advance;
 
-		s_RenderData.TextVerticesCurr->Position = transform * s_RenderData.UnitRectVertices[3];
-		s_RenderData.TextVerticesCurr->Colour = colour;
-		s_RenderData.TextVerticesCurr->TexCoords = { (float)fc.Offset / s_RenderData.FontAtlas->Width(), 1.0f };
-		s_RenderData.TextVerticesCurr++;
-
-		x += fc.Advance * scale / 64;
-
-		s_RenderData.TextIndexCount += 6;
+			s_RenderData.TextIndexCount += 6;
+		}
 	}
 }
 
@@ -467,4 +474,9 @@ Shader* Renderer::CircleShader()
 Shader* Renderer::TextShader()
 {
 	return s_RenderData.TextShader;
+}
+
+double Renderer::LineHeight()
+{
+	return s_RenderData.FontGeometry->getMetrics().lineHeight;
 }

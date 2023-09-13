@@ -50,6 +50,11 @@ namespace Canvas {
 	void CANVAS_API FontSize(uint32_t size);
 
 	/**
+	 * @return Line height for the set font.
+	 */
+	float CANVAS_API FontLineHeight();
+
+	/**
 	 * @brief Draw text. Text colour is affected by stroke colour.
 	 */
 	void CANVAS_API Text(const char* text, int x, int y);
