@@ -3,8 +3,6 @@
 #include <iostream>
 #include <glew.h>
 #include <glm/ext/matrix_transform.hpp>
-#include <ft2build.h>
-#include FT_FREETYPE_H
 #include <stb_image_write/stb_image_write.h>
 
 #include "Shader.h"

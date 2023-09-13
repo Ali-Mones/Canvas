@@ -21,7 +21,27 @@ project "Canvas"
     location "Canvas"
     kind "SharedLib"
     staticruntime "off"
-    files { "%{prj.location}/**.hpp", "%{prj.location}/**.cpp", "%{prj.location}/**.h" }
+    files {
+        "%{prj.location}/src/*.hpp",
+        "%{prj.location}/src/*.cpp",
+        "%{prj.location}/src/*.h",
+
+        "%{prj.location}/vendor/glm/**.hpp",
+        "%{prj.location}/vendor/glm/**.cpp",
+        "%{prj.location}/vendor/glm/**.h",
+
+        "%{prj.location}/vendor/imgui/**.hpp",
+        "%{prj.location}/vendor/imgui/**.cpp",
+        "%{prj.location}/vendor/imgui/**.h",
+
+        "%{prj.location}/vendor/stb_image/**.hpp",
+        "%{prj.location}/vendor/stb_image/**.cpp",
+        "%{prj.location}/vendor/stb_image/**.h",
+
+        "%{prj.location}/vendor/stb_image_write/**.hpp",
+        "%{prj.location}/vendor/stb_image_write/**.cpp",
+        "%{prj.location}/vendor/stb_image_write/**.h",
+    }
 
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
