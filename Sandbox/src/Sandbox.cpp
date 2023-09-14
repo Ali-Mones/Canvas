@@ -28,11 +28,16 @@ void Draw()
 	*/
 
 	Input();
-	Clear(24, 24, 24);
+	Clear(0, 0, 0);
 	Stroke(255);
 	FontSize(24);
 	Text("today we kill your face", 0, 0);
 	Text("hello my friends", 0, FontLineHeight());
+
+	Fill(255);
+	Stroke(255, 0, 0);
+	StrokeWeight(20);
+	Ellipse(200, 200, 200, 200);
 }
 
 void Input()

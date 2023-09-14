@@ -35,23 +35,23 @@ in vec4 v_FillColour;
 in vec4 v_StrokeColour;
 in float v_Thickness;
 
+float circle(vec2 pos, float radius)
+{
+	return length(pos) - radius;
+}
+
 void main()
 {
-    float dis = length(v_LocalPosition);
-	float fwd = fwidth(dis);
-    float alpha1 = smoothstep(0.0, 2.0 * fwd, 1.0 - dis);
-	alpha1 *= smoothstep(v_Thickness - fwd, v_Thickness + fwd, dis);
+	float c = circle(v_LocalPosition, 1.0);
+	float fwd = fwidth(c);
 
-	float alpha2 = 1.0 - smoothstep(v_Thickness - fwd, v_Thickness + fwd, dis);
+	float s = step(0.0, c);
+	s = smoothstep(-fwd * 2.0, 0.0, c);
 
-	if (dis >= v_Thickness - fwd && dis <= 1.0)
-		o_Colour = vec4(v_StrokeColour.xyz, alpha1 * v_StrokeColour.w);
+	float s2 = step(-v_Thickness / 2.0, c);
+	s2 = smoothstep(-v_Thickness - fwd, -v_Thickness + fwd, c);
 
-	if (v_FillColour != vec4(0, 0, 0, 0))
-	{
-		if (dis <= v_Thickness + fwd && dis >= v_Thickness - fwd)
-			o_Colour = mix(vec4(v_FillColour.xyz, alpha2 * v_FillColour.w), v_StrokeColour, alpha1);
-		else if (dis <= v_Thickness - fwd)
-			o_Colour = v_FillColour;
-	}
-}
+	vec4 color = mix(v_FillColour, v_StrokeColour, s2);
+	color = mix(color, vec4(0.0), s);
+	o_Colour = color;
+} 

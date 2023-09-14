@@ -81,9 +81,9 @@ namespace Canvas {
 			strokeColour = glm::vec4(0);
 
 		if (strokeColour == glm::vec4(0))
-			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, -1, 0);
+			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, 0.0f, 0.0f);
 		else
-			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, 0);
+			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, 0.0f);
 	}
 
 	void Line(int x1, int y1, int x2, int y2)
@@ -105,8 +105,8 @@ namespace Canvas {
 		float diameter = s_Data.StrokeWeight;
 		glm::vec3 circleDims(diameter, diameter, 0);
 
-		Renderer::Ellipse(p1, circleDims, strokeColour, glm::vec4(0), -1, 0);
-		Renderer::Ellipse(p2, circleDims, strokeColour, glm::vec4(0), -1, 0);
+		Renderer::Ellipse(p1, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
+		Renderer::Ellipse(p2, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
 	}
 
 	void BezierCurve(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)

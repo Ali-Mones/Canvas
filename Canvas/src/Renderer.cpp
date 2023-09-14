@@ -338,10 +338,8 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 		* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
 		* glm::scale(glm::mat4(1), glm::vec3(dimensions.x, dimensions.y, 0));
 
-	float r = dimensions.x > dimensions.y ? 1.0f - thickness / dimensions.y : 1.0f - thickness / dimensions.x;
-
-	if (thickness == -1)
-		r = 1.0f;
+	float thiccness = dimensions.x > dimensions.y ? thickness / dimensions.y : thickness / dimensions.x;
+	thiccness *= 2.0f;
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -349,7 +347,7 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 		s_RenderData.CircleVerticesCurr->LocalPosition = s_RenderData.UnitRectVertices[i] * 2.0f;
 		s_RenderData.CircleVerticesCurr->FillColour = fillColour;
 		s_RenderData.CircleVerticesCurr->StrokeColour = strokeColour;
-		s_RenderData.CircleVerticesCurr->Thickness = r;
+		s_RenderData.CircleVerticesCurr->Thickness = thiccness;
 		s_RenderData.CircleVerticesCurr++;
 	}
 
