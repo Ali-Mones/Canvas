@@ -29,12 +29,13 @@ void Draw()
 			add custom vector classes + adding API changes for them
 	*/
 
-	SetPositionMode(PositionMode::TopLeft);
+	SetPositionMode(PositionMode::Center);
+	SetOriginPosition(OriginPosition::Center);
 	Input();
 	Clear(0, 0, 0);
 	Stroke(255);
 	FontSize(24);
-	Text("today we kill your face", 0, WindowHeight(), arial);
+	Text("today we kill your face", 0, 0, arial);
 	//Text("hello my friends", 0, 400, cambria);
 
 	Fill(255);

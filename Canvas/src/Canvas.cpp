@@ -13,6 +13,7 @@ struct CanvasData
 {
 	/* Attributes */
 	Canvas::PositionMode PositionMode = Canvas::PositionMode::Center;
+	Canvas::OriginPosition OriginPosition = Canvas::OriginPosition::BottomLeft;
 
 	glm::vec4 FillColour = glm::vec4(1);
 
@@ -68,11 +69,55 @@ static glm::vec2 GetTextDimensions(const std::string& text, MSDFFont* font)
 	return glm::vec2(textWidth, textHeight);
 }
 
+static void StandardisePosition(int& x, int& y, uint32_t w, uint32_t h)
+{
+	if (s_Data.OriginPosition == Canvas::OriginPosition::Center)
+	{
+		x += Canvas::WindowWidth() / 2;
+		y += Canvas::WindowHeight() / 2;
+	}
+	else if (s_Data.OriginPosition == Canvas::OriginPosition::BottomRight)
+		x = Canvas::WindowWidth() - x;
+	else if (s_Data.OriginPosition == Canvas::OriginPosition::TopLeft)
+		y = Canvas::WindowHeight() - y;
+	else if (s_Data.OriginPosition == Canvas::OriginPosition::TopRight)
+	{
+		x = Canvas::WindowWidth() - x;
+		y = Canvas::WindowHeight() - y;
+	}
+
+	if (s_Data.PositionMode == Canvas::PositionMode::TopLeft)
+	{
+		x += w / 2;
+		y -= h / 2;
+	}
+	else if (s_Data.PositionMode == Canvas::PositionMode::BottomLeft)
+	{
+		x += w / 2;
+		y += h / 2;
+	}
+	else if (s_Data.PositionMode == Canvas::PositionMode::TopRight)
+	{
+		x -= w / 2;
+		y -= h / 2;
+	}
+	else if (s_Data.PositionMode == Canvas::PositionMode::BottomRight)
+	{
+		x -= w / 2;
+		y += h / 2;
+	}
+}
+
 namespace Canvas {
 
 	void SetPositionMode(PositionMode mode)
 	{
 		s_Data.PositionMode = mode;
+	}
+
+	void SetOriginPosition(OriginPosition position)
+	{
+		s_Data.OriginPosition = position;
 	}
 
 	void Clear(uint32_t r, uint32_t g, uint32_t b)
@@ -83,26 +128,7 @@ namespace Canvas {
 
 	void Rect(int x, int y, uint32_t w, uint32_t h)
 	{
-		if (s_Data.PositionMode == PositionMode::TopLeft)
-		{
-			x += s_Data.FontSize * w / 2;
-			y -= s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomLeft)
-		{
-			x += s_Data.FontSize * w / 2;
-			y += s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::TopRight)
-		{
-			x -= s_Data.FontSize * w / 2;
-			y -= s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomRight)
-		{
-			x -= s_Data.FontSize * w / 2;
-			y += s_Data.FontSize * h / 2;
-		}
+		StandardisePosition(x, y, w, h);
 
 		glm::vec3 pos = glm::vec3(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
 		glm::vec3 dims = glm::vec3(w, h, 0);
@@ -116,26 +142,7 @@ namespace Canvas {
 
 	void TexturedRect(int x, int y, uint32_t w, uint32_t h, Texture texture)
 	{
-		if (s_Data.PositionMode == PositionMode::TopLeft)
-		{
-			x += s_Data.FontSize * w / 2;
-			y -= s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomLeft)
-		{
-			x += s_Data.FontSize * w / 2;
-			y += s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::TopRight)
-		{
-			x -= s_Data.FontSize * w / 2;
-			y -= s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomRight)
-		{
-			x -= s_Data.FontSize * w / 2;
-			y += s_Data.FontSize * h / 2;
-		}
+		StandardisePosition(x, y, w, h);
 
 		float width = w, height = h;
 		if (s_Data.HorizontalFlip)
@@ -158,26 +165,7 @@ namespace Canvas {
 
 	void Ellipse(int x, int y, uint32_t w, uint32_t h)
 	{
-		if (s_Data.PositionMode == PositionMode::TopLeft)
-		{
-			x += s_Data.FontSize * w / 2;
-			y -= s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomLeft)
-		{
-			x += s_Data.FontSize * w / 2;
-			y += s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::TopRight)
-		{
-			x -= s_Data.FontSize * w / 2;
-			y -= s_Data.FontSize * h / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomRight)
-		{
-			x -= s_Data.FontSize * w / 2;
-			y += s_Data.FontSize * h / 2;
-		}
+		StandardisePosition(x, y, w, h);
 
 		glm::vec3 pos = glm::vec3(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
 		glm::vec3 dims = glm::vec3(w, h, 0);
@@ -255,26 +243,7 @@ namespace Canvas {
 	void Text(const char* text, int x, int y, Font font)
 	{
 		glm::vec2 dims = GetTextDimensions(text, s_Data.FontsMap[font]);
-		if (s_Data.PositionMode == PositionMode::TopLeft)
-		{
-			x += s_Data.FontSize * dims.x / 2;
-			y -= s_Data.FontSize * dims.y / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomLeft)
-		{
-			x += s_Data.FontSize * dims.x / 2;
-			y += s_Data.FontSize * dims.y / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::TopRight)
-		{
-			x -= s_Data.FontSize * dims.x / 2;
-			y -= s_Data.FontSize * dims.y / 2;
-		}
-		else if (s_Data.PositionMode == PositionMode::BottomRight)
-		{
-			x -= s_Data.FontSize * dims.x / 2;
-			y += s_Data.FontSize * dims.y / 2;
-		}
+		StandardisePosition(x, y, s_Data.FontSize * dims.x, s_Data.FontSize * dims.y);
 
 		glm::vec3 pos(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
 		Renderer::Text(pos, glm::vec3(dims, 0.0f), 0.0f, s_Data.StrokeColour, text, s_Data.FontsMap[font], s_Data.FontSize);

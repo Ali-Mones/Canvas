@@ -17,12 +17,26 @@ namespace Canvas {
 		TopRight,
 		BottomRight
 	};
+
+	enum class OriginPosition
+	{
+		Center,
+		TopLeft,
+		BottomLeft,
+		TopRight,
+		BottomRight
+	};
 	
 	/**
 	 * @brief Create the canvas.
 	 * @brief WARNING: This function must be called first thing in the Setup() function.
 	 */
 	void CANVAS_API CreateCanvas(uint32_t width, uint32_t height);
+
+	/**
+	 * @brief Sets the position of the origin.
+	 */
+	void CANVAS_API SetOriginPosition(OriginPosition position);
 
 	/**
 	 * @brief Sets the position of the coordinates relative to the drawn shapes.
