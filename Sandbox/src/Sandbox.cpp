@@ -27,16 +27,15 @@ void Draw()
 {
 	/*	TODO:
 			add custom vector classes + adding API changes for them
-			add PositionMode() function
-			move text/font stuff into own file && add api for them like textures
 	*/
 
+	SetPositionMode(PositionMode::TopLeft);
 	Input();
 	Clear(0, 0, 0);
 	Stroke(255);
 	FontSize(24);
-	Text("today we kill your face", 0, 0, arial);
-	Text("hello my friends", 0, 400, cambria);
+	Text("today we kill your face", 0, WindowHeight(), arial);
+	//Text("hello my friends", 0, 400, cambria);
 
 	Fill(255);
 	Stroke(255, 0, 0);

@@ -8,12 +8,26 @@ typedef uint32_t Texture;
 typedef uint32_t Font;
 
 namespace Canvas {
+
+	enum class PositionMode
+	{
+		Center,
+		TopLeft,
+		BottomLeft,
+		TopRight,
+		BottomRight
+	};
 	
 	/**
 	 * @brief Create the canvas.
 	 * @brief WARNING: This function must be called first thing in the Setup() function.
 	 */
 	void CANVAS_API CreateCanvas(uint32_t width, uint32_t height);
+
+	/**
+	 * @brief Sets the position of the coordinates relative to the drawn shapes.
+	 */
+	void CANVAS_API SetPositionMode(PositionMode mode);
 
 	/**
 	 * @brief Clear the whole canvas using the specified colour

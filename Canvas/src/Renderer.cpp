@@ -311,7 +311,7 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 	s_RenderData.RectCount++;
 }
 
-void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& colour, const std::string& text, const MSDFFont* font, uint32_t fontSize)
+void Renderer::Text(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& colour, const std::string& text, const MSDFFont* font, uint32_t fontSize)
 {
 	assert(font);
 
@@ -342,32 +342,9 @@ void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& col
 
 	double fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
 	double x = 0, y = 0;
-	double textWidth = 0.0;
 	double texelWidth = 1.0 / font->FontAtlas->Width();
 	double texelHeight = 1.0 / font->FontAtlas->Height();
-
-	for (const char& c : text)
-	{
-		if (c == '\r')
-			continue;
-		if (c == '\n')
-		{
-			textWidth = std::max(textWidth, x);
-			x = 0;
-			y -= fsScale * metrics.lineHeight;
-			continue;
-		}
-		const msdf_atlas::GlyphGeometry* glyph = font->FontGeometry.getGlyph(c);
-		if (glyph)
-		{
-			double advance = glyph->getAdvance();
-			font->FontGeometry.getAdvance(advance, c, *((&c) + 1));
-			x += fsScale * advance;
-		}
-	}
-
-	textWidth = std::max(x, textWidth);
-	double textHeight = fsScale * metrics.lineHeight;
+	double textWidth = dimensions.x, textHeight = dimensions.y;
 
 	for (const char& c : text)
 	{
@@ -393,7 +370,7 @@ void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& col
 				pl += x, pb += y, pr += x, pt += y;
 				il *= texelWidth, ib *= texelHeight, ir *= texelWidth, it *= texelHeight;
 
-				glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x - fontSize * textWidth * 1.5, position.y - fontSize * textHeight / 3, position.z))
+				glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x - fontSize * textWidth / 2, position.y - fontSize * textHeight / 3, position.z))
 					* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
 					* glm::scale(glm::mat4(1), glm::vec3(fontSize, fontSize, 0));
 
