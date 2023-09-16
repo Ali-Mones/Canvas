@@ -32,16 +32,20 @@ void Draw()
 	SetPositionMode(PositionMode::Center);
 	SetOriginPosition(OriginPosition::Center);
 	Input();
-	Clear(0, 0, 0);
-	Stroke(255);
-	FontSize(24);
-	Text("today we kill your face", 0, 0, arial);
-	//Text("hello my friends", 0, 400, cambria);
+	Clear(0, 255, 0);
 
-	Fill(255);
-	Stroke(255, 0, 0);
-	StrokeWeight(20);
+	Stroke(0);
+	FontSize(120);
+	Text("today we kill your face", 0, FontLineHeight(arial), arial);
+
+	Fill(200);
+	Rect(200, 200, 400, 400);
+
+	Stroke(0);
+	StrokeWeight(4);
+	Fill(255, 255, 0);
 	Ellipse(200, 200, 200, 200);
+
 }
 
 void Input()

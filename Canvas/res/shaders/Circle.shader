@@ -45,13 +45,12 @@ void main()
 	float c = circle(v_LocalPosition, 1.0);
 	float fwd = fwidth(c);
 
-	float s = step(0.0, c);
-	s = smoothstep(-fwd * 2.0, 0.0, c);
-
-	float s2 = step(-v_Thickness / 2.0, c);
-	s2 = smoothstep(-v_Thickness - fwd, -v_Thickness + fwd, c);
+	float s = smoothstep(-fwd * 2.0, 0.0, c);
+	float s2 = smoothstep(-v_Thickness - fwd, -v_Thickness + fwd, c);
 
 	vec4 color = mix(v_FillColour, v_StrokeColour, s2);
 	color = mix(color, vec4(0.0), s);
+	if (color.a == 0.0)
+		discard;
 	o_Colour = color;
 } 

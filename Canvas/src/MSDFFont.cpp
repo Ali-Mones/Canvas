@@ -24,7 +24,7 @@ MSDFFont::MSDFFont(const char* filepath)
 			// TightAtlasPacker class computes the layout of the atlas.
 			msdf_atlas::TightAtlasPacker packer;
 			packer.setDimensionsConstraint(msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
-			packer.setScale(60.0);
+			packer.setScale(40.0);
 			packer.setPixelRange(1.0);
 			packer.setMiterLimit(1.0);
 			packer.setPadding(0.0);
