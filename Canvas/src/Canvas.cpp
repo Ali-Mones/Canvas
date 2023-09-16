@@ -309,7 +309,16 @@ namespace Canvas {
 		s_Data.VerticalFlip = value;
 	}
 
-	double MouseX()
+	Vector2 MousePosition()
+	{
+		double xpos, ypos;
+		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
+		glfwGetCursorPos(window, &xpos, &ypos);
+		glm::vec4 pos = Camera::Get().GetWorldPosition(xpos, ypos);
+		return Vector2(pos.x, pos.y);
+	}
+
+	float MouseX()
 	{
 		double xpos, ypos;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
@@ -318,7 +327,7 @@ namespace Canvas {
 		return pos.x;
 	}
 
-	double MouseY()
+	float MouseY()
 	{
 		double xpos, ypos;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
