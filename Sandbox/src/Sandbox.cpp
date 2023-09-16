@@ -5,8 +5,10 @@
 
 using namespace Canvas;
 
-CanvasTexture t;
-CanvasTexture player;
+Texture t;
+Texture player;
+Font arial;
+Font cambria;
 bool hflip = false;
 bool vflip = false;
 
@@ -17,6 +19,8 @@ void Setup()
 	CreateCanvas(1280, 720);
 	t = CreateTexture("res/textures/heart.png");
 	player = CreateTexture("res/textures/player.png");
+	arial = LoadFont("C:/Windows/Fonts/Arial.ttf");
+	cambria = LoadFont("C:/Windows/Fonts/cambriab.ttf");
 }
 
 void Draw()
@@ -31,8 +35,8 @@ void Draw()
 	Clear(0, 0, 0);
 	Stroke(255);
 	FontSize(24);
-	Text("today we kill your face", 0, 0);
-	Text("hello my friends", 0, FontLineHeight());
+	Text("today we kill your face", 0, 0, arial);
+	Text("hello my friends", 0, 400, cambria);
 
 	Fill(255);
 	Stroke(255, 0, 0);

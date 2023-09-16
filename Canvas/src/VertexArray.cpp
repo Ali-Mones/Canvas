@@ -92,7 +92,11 @@ void VertexArray::SetLayout<TextVertex>()
 
 	offset = offsetof(TextVertex, TexCoords);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_DOUBLE, GL_FALSE, sizeof(TextVertex), (const void*)offset);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (const void*)offset);
+
+	offset = offsetof(TextVertex, TexIndex);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (const void*)offset);
 }
 
 void VertexArray::Bind()

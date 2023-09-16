@@ -4,7 +4,8 @@
 #include <glm/glm.hpp>
 
 #include "Core.h"
-#include "Texture.h"
+#include "Texture2D.h"
+#include "MSDFFont.h"
 
 class Shader;
 
@@ -18,10 +19,10 @@ public:
 	static void Flush();
 
 	static void Clear(glm::vec4 colour);
-	static void Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, const Texture* texture, float tilingFactor);
+	static void Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor);
 	static void Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColour, glm::vec4 strokeColour, int thickness, float angle);
 	static void Quad(int p1, int p2, int p3, int p4);
-	static void Text(const glm::vec3& position, float angle, const glm::vec4& colour, const std::string& text, uint32_t fontSize);
+	static void Text(const glm::vec3& position, float angle, const glm::vec4& colour, const std::string& text, const MSDFFont* font, uint32_t fontSize);
 
 	static uint32_t QuadCount();
 	static uint32_t DrawCalls();
@@ -29,6 +30,4 @@ public:
 	static Shader* RectShader();
 	static Shader* CircleShader();
 	static Shader* TextShader();
-
-	static double LineHeight();
 };

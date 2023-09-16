@@ -6,7 +6,8 @@
 #include "Canvas.h"
 #include "Window.h"
 #include "Camera.h"
-#include "Texture.h"
+#include "Texture2D.h"
+#include "MSDFFont.h"
 
 struct CanvasData
 {
@@ -24,7 +25,8 @@ struct CanvasData
 
 	uint32_t FontSize = 18;
 
-	std::unordered_map<uint32_t, Texture*> TexturesMap;
+	std::unordered_map<uint32_t, Texture2D*> TexturesMap;
+	std::unordered_map<uint32_t, MSDFFont*> FontsMap;
 };
 
 static CanvasData s_Data;
@@ -50,7 +52,7 @@ namespace Canvas {
 		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
 	}
 
-	void TexturedRect(int x, int y, uint32_t w, uint32_t h, CanvasTexture texture)
+	void TexturedRect(int x, int y, uint32_t w, uint32_t h, Texture texture)
 	{
 		float width = w, height = h;
 		if (s_Data.HorizontalFlip)
@@ -134,15 +136,22 @@ namespace Canvas {
 		}
 	}
 
+	Font LoadFont(const char* filepath)
+	{
+		MSDFFont* font = new MSDFFont(filepath);
+		s_Data.FontsMap[font->FontAtlas->RendererID()] = font;
+		return font->FontAtlas->RendererID();
+	}
+
 	void FontSize(uint32_t size)
 	{
 		s_Data.FontSize = size;
 	}
 
-	void Text(const char* text, int x, int y)
+	void Text(const char* text, int x, int y, Font font)
 	{
 		glm::vec3 pos(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
-		Renderer::Text(pos, 0.0f, s_Data.StrokeColour, text, s_Data.FontSize);
+		Renderer::Text(pos, 0.0f, s_Data.StrokeColour, text, s_Data.FontsMap[font], s_Data.FontSize);
 	}
 
 	void Point(int x, int y)
@@ -153,9 +162,9 @@ namespace Canvas {
 		s_Data.FillColour = oldFill;
 	}
 
-	CanvasTexture CreateTexture(const char* filepath)
+	Texture CreateTexture(const char* filepath)
 	{
-		Texture* t = new Texture(filepath);
+		Texture2D* t = new Texture2D(filepath);
 		s_Data.TexturesMap[t->RendererID()] = t;
 		return t->RendererID();
 	}
@@ -233,14 +242,16 @@ namespace Canvas {
 		return Camera::Get().WindowHeight();
 	}
 
-	float FontLineHeight()
+	float FontLineHeight(Font font)
 	{
-		return s_Data.FontSize * Renderer::LineHeight();
+		return s_Data.FontSize * s_Data.FontsMap[font]->FontGeometry.getMetrics().lineHeight;
 	}
 
 	void Shutdown()
 	{
 		for (auto texture : s_Data.TexturesMap)
 			delete texture.second;
+		for (auto font : s_Data.FontsMap)
+			delete font.second;
 	}
 }

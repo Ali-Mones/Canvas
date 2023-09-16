@@ -10,7 +10,8 @@
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "Vertex.h"
-#include "Texture.h"
+#include "Texture2D.h"
+#include "MSDFFont.h"
 
 #include <msdfgen.h>
 #include <msdfgen-ext.h>
@@ -48,10 +49,9 @@ struct RenderData
 	TextVertex* TextVerticesBase;
 	TextVertex* TextVerticesCurr;
 	Shader* TextShader;
-	Texture* FontAtlas;
-	msdf_atlas::FontGeometry* FontGeometry;
-	std::vector<msdf_atlas::GlyphGeometry> Glyphs;
-	std::unordered_map<char, FontCharacter> CharactersMap;
+
+	const MSDFFont* FontTextureSlots[32];
+	uint32_t FontTextureSlotIndex = 0;
 
 	glm::vec4 UnitRectVertices[4];
 
@@ -64,9 +64,9 @@ struct RenderData
 	static const uint32_t MaxIndexCount = MaxRectCount * 6;
 	static const uint32_t MaxTextureSlots = 32;	// TODO: check how to make dynamic
 
-	const Texture* TextureSlots[32];
+	const Texture2D* TextureSlots[32];
 	uint32_t TextureSlotIndex = 1; // index 0 = white texture
-	Texture* WhiteTexture;
+	Texture2D* WhiteTexture;
 };
 
 static RenderData s_RenderData;
@@ -116,7 +116,7 @@ void Renderer::Init()
 	s_RenderData.UnitRectVertices[2] = glm::vec4( 0.5,  0.5, 0, 1);
 	s_RenderData.UnitRectVertices[3] = glm::vec4(-0.5,  0.5, 0, 1);
 
-	s_RenderData.WhiteTexture = new Texture();
+	s_RenderData.WhiteTexture = new Texture2D();
 	uint32_t whiteData = 0xffffffff;
 	s_RenderData.WhiteTexture->SetData(&whiteData, sizeof(uint32_t));
 	s_RenderData.TextureSlots[0] = s_RenderData.WhiteTexture;
@@ -126,67 +126,21 @@ void Renderer::Init()
 		samplers[i] = i;
 	
 	s_RenderData.RectShader->SetUniformArray1i("u_Textures", samplers, s_RenderData.MaxTextureSlots);
-
-	// Text initialisation
-	s_RenderData.TextShader->SetUniform1i("u_Texture", 0);
-
-	// Initialize instance of FreeType library
-	if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype())
-	{
-		// Load font file
-		if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:/Windows/Fonts/Arial.ttf"))
-		{
-			// Storage for glyph geometry and their coordinates in the atlas
-			s_RenderData.FontGeometry = new msdf_atlas::FontGeometry(&s_RenderData.Glyphs);
-			int loaded = s_RenderData.FontGeometry->loadCharset(font, 1.0, msdf_atlas::Charset::ASCII);
-			assert(loaded == 95);
-
-			const double maxCornerAngle = 3.0;
-			for (msdf_atlas::GlyphGeometry& glyph : s_RenderData.Glyphs)
-				glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, maxCornerAngle, 0);
-
-			// TightAtlasPacker class computes the layout of the atlas.
-			msdf_atlas::TightAtlasPacker packer;
-			packer.setDimensionsConstraint(msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
-			packer.setScale(60.0);
-			packer.setPixelRange(1.0);
-			packer.setMiterLimit(1.0);
-			packer.setPadding(0.0);
-
-			// Compute atlas layout - pack glyphs
-			int remaining = packer.pack(s_RenderData.Glyphs.data(), s_RenderData.Glyphs.size());
-			assert(remaining == 0);
-
-			// Get final atlas dimensions
-			int width, height;
-			packer.getDimensions(width, height);
-
-			msdf_atlas::ImmediateAtlasGenerator<float, 3, msdf_atlas::msdfGenerator, msdf_atlas::BitmapAtlasStorage<msdfgen::byte, 3>> generator(width, height);
-			generator.setAttributes(msdf_atlas::GeneratorAttributes());
-			generator.setThreadCount(4);
-			generator.generate(s_RenderData.Glyphs.data(), s_RenderData.Glyphs.size());
-
-			msdfgen::BitmapConstRef<msdfgen::byte, 3> bitmap = (msdfgen::BitmapConstRef<msdfgen::byte, 3>) generator.atlasStorage();
-			s_RenderData.FontAtlas = new Texture((void*)bitmap.pixels, width, height, 3);
-
-			msdfgen::destroyFont(font);
-		}
-		msdfgen::deinitializeFreetype(ft);
-	}
+	s_RenderData.TextShader->SetUniformArray1i("u_Textures", samplers, s_RenderData.MaxTextureSlots);
 }
 
 void Renderer::StartBatch()
 {
 	s_RenderData.RectVerticesCurr = s_RenderData.RectVerticesBase;
 	s_RenderData.RectIndexCount = 0;
+	s_RenderData.TextureSlotIndex = 1;
 
 	s_RenderData.CircleVerticesCurr = s_RenderData.CircleVerticesBase;
 	s_RenderData.CircleIndexCount = 0;
 
 	s_RenderData.TextVerticesCurr = s_RenderData.TextVerticesBase;
 	s_RenderData.TextIndexCount = 0;
-
-	s_RenderData.TextureSlotIndex = 1;
+	s_RenderData.FontTextureSlotIndex = 0;
 }
 
 void Renderer::Flush()
@@ -202,7 +156,6 @@ void Renderer::Flush()
 		s_RenderData.RectVertexArray->Bind();
 		s_RenderData.RectShader->Bind();
 		s_RenderData.RectIndexBuffer->Bind();
-		s_RenderData.FontAtlas->Bind();
 		glDrawElements(GL_TRIANGLES, s_RenderData.RectIndexCount, GL_UNSIGNED_INT, nullptr);
 		s_RenderData.DrawCalls++;
 	}
@@ -222,9 +175,12 @@ void Renderer::Flush()
 	{
 		uint32_t count = s_RenderData.TextVerticesCurr - s_RenderData.TextVerticesBase;
 		s_RenderData.TextVertexBuffer->SetBuffer(count * sizeof(TextVertex), s_RenderData.TextVerticesBase);
+
+		for (uint32_t i = 0; i < s_RenderData.FontTextureSlotIndex; i++)
+			s_RenderData.FontTextureSlots[i]->FontAtlas->Bind(i);
+
 		s_RenderData.TextVertexArray->Bind();
 		s_RenderData.TextShader->Bind();
-		s_RenderData.FontAtlas->Bind();
 		s_RenderData.RectIndexBuffer->Bind();
 		glDrawElements(GL_TRIANGLES, s_RenderData.TextIndexCount, GL_UNSIGNED_INT, nullptr);
 		s_RenderData.DrawCalls++;
@@ -249,7 +205,6 @@ void Renderer::Shutdown()
 	delete s_RenderData.TextVertexBuffer;
 	delete s_RenderData.TextShader;
 	delete s_RenderData.TextVerticesBase;
-	delete s_RenderData.FontAtlas;
 
 	delete s_RenderData.WhiteTexture;
 }
@@ -263,7 +218,7 @@ void Renderer::Clear(glm::vec4 colour)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, const Texture* texture, float tilingFactor)
+void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor)
 {
 	uint32_t vertexCount = s_RenderData.RectVerticesCurr - s_RenderData.RectVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
@@ -356,15 +311,40 @@ void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillC
 	s_RenderData.RectCount++;
 }
 
-void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& colour, const std::string& text, uint32_t fontSize)
+void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& colour, const std::string& text, const MSDFFont* font, uint32_t fontSize)
 {
-	const auto& metrics = s_RenderData.FontGeometry->getMetrics();
+	assert(font);
+
+	uint32_t vertexCount = s_RenderData.TextVerticesCurr - s_RenderData.TextVerticesBase;
+	if (vertexCount == s_RenderData.MaxVertexCount || s_RenderData.FontTextureSlotIndex >= s_RenderData.MaxTextureSlots)
+	{
+		Flush();
+		StartBatch();
+	}
+
+	float textureIndex = -1.0f;
+	for (int i = 0; i < s_RenderData.FontTextureSlotIndex; i++)
+	{
+		if (font->FontAtlas == s_RenderData.FontTextureSlots[i]->FontAtlas)
+		{
+			textureIndex = i;
+			break;
+		}
+	}
+
+	if (textureIndex == -1.0f)
+	{
+		textureIndex = s_RenderData.FontTextureSlotIndex;
+		s_RenderData.FontTextureSlots[s_RenderData.FontTextureSlotIndex++] = font;
+	}
+
+	const auto& metrics = font->FontGeometry.getMetrics();
 
 	double fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
 	double x = 0, y = 0;
 	double textWidth = 0.0;
-	double texelWidth = 1.0 / s_RenderData.FontAtlas->Width();
-	double texelHeight = 1.0 / s_RenderData.FontAtlas->Height();
+	double texelWidth = 1.0 / font->FontAtlas->Width();
+	double texelHeight = 1.0 / font->FontAtlas->Height();
 
 	for (const char& c : text)
 	{
@@ -377,11 +357,11 @@ void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& col
 			y -= fsScale * metrics.lineHeight;
 			continue;
 		}
-		const msdf_atlas::GlyphGeometry* glyph = s_RenderData.FontGeometry->getGlyph(c);
+		const msdf_atlas::GlyphGeometry* glyph = font->FontGeometry.getGlyph(c);
 		if (glyph)
 		{
 			double advance = glyph->getAdvance();
-			s_RenderData.FontGeometry->getAdvance(advance, c, *((&c) + 1));
+			font->FontGeometry.getAdvance(advance, c, *((&c) + 1));
 			x += fsScale * advance;
 		}
 	}
@@ -400,7 +380,7 @@ void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& col
 			y -= fsScale * metrics.lineHeight;
 			continue;
 		}
-		const msdf_atlas::GlyphGeometry* glyph = s_RenderData.FontGeometry->getGlyph(c);
+		const msdf_atlas::GlyphGeometry* glyph = font->FontGeometry.getGlyph(c);
 		if (glyph)
 		{
 			if (!glyph->isWhitespace())
@@ -420,26 +400,30 @@ void Renderer::Text(const glm::vec3& position, float angle, const glm::vec4& col
 				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pl, pb, 0.0f, 1.0f);
 				s_RenderData.TextVerticesCurr->Colour = colour;
 				s_RenderData.TextVerticesCurr->TexCoords = { il, ib };
+				s_RenderData.TextVerticesCurr->TexIndex = textureIndex;
 				s_RenderData.TextVerticesCurr++;
 
 				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pr, pb, 0.0f, 1.0f);
 				s_RenderData.TextVerticesCurr->Colour = colour;
 				s_RenderData.TextVerticesCurr->TexCoords = { ir, ib };
+				s_RenderData.TextVerticesCurr->TexIndex = textureIndex;
 				s_RenderData.TextVerticesCurr++;
 
 				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pr, pt, 0.0f, 1.0f);
 				s_RenderData.TextVerticesCurr->Colour = colour;
 				s_RenderData.TextVerticesCurr->TexCoords = { ir, it };
+				s_RenderData.TextVerticesCurr->TexIndex = textureIndex;
 				s_RenderData.TextVerticesCurr++;
 
 				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pl, pt, 0.0f, 1.0f);
 				s_RenderData.TextVerticesCurr->Colour = colour;
 				s_RenderData.TextVerticesCurr->TexCoords = { il, it };
+				s_RenderData.TextVerticesCurr->TexIndex = textureIndex;
 				s_RenderData.TextVerticesCurr++;
 			}
 
 			double advance = glyph->getAdvance();
-			s_RenderData.FontGeometry->getAdvance(advance, c, *((&c) + 1));
+			font->FontGeometry.getAdvance(advance, c, *((&c) + 1));
 			x += fsScale * advance;
 
 			s_RenderData.TextIndexCount += 6;
@@ -470,9 +454,4 @@ Shader* Renderer::CircleShader()
 Shader* Renderer::TextShader()
 {
 	return s_RenderData.TextShader;
-}
-
-double Renderer::LineHeight()
-{
-	return s_RenderData.FontGeometry->getMetrics().lineHeight;
 }

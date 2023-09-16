@@ -1,11 +1,11 @@
-#include "Texture.h"
+#include "Texture2D.h"
 #include <stb_image/stb_image.h>
 
 #include <iostream>
 #include <glew.h>
 #include <filesystem>
 
-Texture::Texture()
+Texture2D::Texture2D()
 	: m_RendererID(0), m_Filepath(""), m_Channels(4)
 {
 	m_InternalFormat = GL_RGBA8;
@@ -21,7 +21,7 @@ Texture::Texture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
-Texture::Texture(void* data, uint32_t width, uint32_t height, uint32_t channels)
+Texture2D::Texture2D(void* data, uint32_t width, uint32_t height, uint32_t channels)
 	: m_RendererID(0), m_Filepath(""), m_Width(width), m_Height(height), m_Channels(channels)
 {
 	switch (channels)
@@ -52,7 +52,7 @@ Texture::Texture(void* data, uint32_t width, uint32_t height, uint32_t channels)
 	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 }
 
-Texture::Texture(const std::string& filepath)
+Texture2D::Texture2D(const std::string& filepath)
 	: m_RendererID(0), m_Filepath(filepath), m_Channels(0)
 {
 	bool exists = std::filesystem::is_regular_file(filepath);
@@ -94,12 +94,12 @@ Texture::Texture(const std::string& filepath)
 		std::cout << stbi_failure_reason() << std::endl;
 }
 
-Texture::~Texture()
+Texture2D::~Texture2D()
 {
 	glDeleteTextures(1, &m_RendererID);
 }
 
-void Texture::SetData(void* data, uint32_t size)
+void Texture2D::SetData(void* data, uint32_t size)
 {
 	uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
 	if (size == m_Width * m_Height * bpp)
@@ -108,12 +108,12 @@ void Texture::SetData(void* data, uint32_t size)
 		std::cout << "Incorrect size for data: size = " << size << " , width * height * bpp = " << m_Width * m_Height * bpp;
 }
 
-void Texture::Bind(uint32_t slot) const
+void Texture2D::Bind(uint32_t slot) const
 {
 	glBindTextureUnit(slot, m_RendererID);
 }
 
-void Texture::Unbind() const
+void Texture2D::Unbind() const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

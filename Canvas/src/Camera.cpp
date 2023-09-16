@@ -101,4 +101,3 @@ void Camera::RecalculateProjection()
 							  -1.0f, 1.0f);
 	m_ViewProjection = m_Projection * m_View;
 }
-

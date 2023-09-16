@@ -4,13 +4,14 @@
 #include "Input.h"
 #include "CanvasCamera.h"
 
-typedef uint32_t CanvasTexture;
+typedef uint32_t Texture;
+typedef uint32_t Font;
 
 namespace Canvas {
 	
 	/**
 	 * @brief Create the canvas.
-	 * @brief WARNING: This function must be called in the Setup() function.
+	 * @brief WARNING: This function must be called first thing in the Setup() function.
 	 */
 	void CANVAS_API CreateCanvas(uint32_t width, uint32_t height);
 
@@ -27,7 +28,7 @@ namespace Canvas {
 	/**
 	 * @brief Draw a textured rectangle
 	 */
-	void CANVAS_API TexturedRect(int x, int y, uint32_t w, uint32_t h, CanvasTexture texture);
+	void CANVAS_API TexturedRect(int x, int y, uint32_t w, uint32_t h, Texture texture);
 
 	/**
 	 * @brief Draw an ellipse
@@ -45,6 +46,14 @@ namespace Canvas {
 	void CANVAS_API BezierCurve(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
 	/**
+	 * @brief Load a font.
+	 * @brief WARNING: Do not use this funcion in the Draw() function but in the Setup() function.
+	 * 
+	 * @return ID of the font.
+	 */
+	Font CANVAS_API LoadFont(const char* filepath);
+
+	/**
 	 * @brief Sets the font size
 	 */
 	void CANVAS_API FontSize(uint32_t size);
@@ -52,12 +61,12 @@ namespace Canvas {
 	/**
 	 * @return Line height for the set font.
 	 */
-	float CANVAS_API FontLineHeight();
+	float CANVAS_API FontLineHeight(Font font);
 
 	/**
 	 * @brief Draw text. Text colour is affected by stroke colour.
 	 */
-	void CANVAS_API Text(const char* text, int x, int y);
+	void CANVAS_API Text(const char* text, int x, int y, Font font);
 
 	/**
 	 * @brief Draw a point of size 2x2 pixels. Point colour is affected by stroke colour.
@@ -70,7 +79,7 @@ namespace Canvas {
 	 * 
 	 * @return ID of the texture.
 	 */
-	CanvasTexture CANVAS_API CreateTexture(const char* filepath);
+	Texture CANVAS_API CreateTexture(const char* filepath);
 
 	/**
 	 * @brief Set the fill colour of the next drawn shapes
