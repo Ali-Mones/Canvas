@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <glew.h>
+#include <glad/glad.h>
 
 Shader::Shader(const std::string& filepath)
 {

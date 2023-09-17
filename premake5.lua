@@ -2,7 +2,6 @@ workspace "OpenGL"
     configurations { "Debug", "Release" }
     language "C++"
     cppdialect "C++20"
-    system "windows"
     architecture "x64"
     startproject "Sandbox"
 
@@ -14,9 +13,10 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 group "Dependencies"
     include "Canvas/vendor/msdf-atlas-gen"
+    include "Canvas/vendor/glfw"
+    include "Canvas/vendor/glad"
 group ""
 
-    
 project "Canvas"
     location "Canvas"
     kind "SharedLib"
@@ -53,28 +53,27 @@ project "Canvas"
 
     defines {
         "BUILD_DLL",
-        "GLEW_STATIC"
     }
 
     links { 
-        "glfw3",
-        "glfw3_mt",
-        "glfw3dll",
+        "glfw",
+        -- "glfw3_mt",
+        -- "glfw3dll",
         "opengl32",
-        "glew32s",
-        "msdf-atlas-gen"
+        "msdf-atlas-gen",
+        "glad"
     }
 
     libdirs {
-        "%{prj.location}/vendor/GLFW/lib",
-        "%{prj.location}/vendor/glew-2.1.0/lib/Release/x64",
+        -- "%{prj.location}/vendor/GLFW/lib",
+        -- "%{prj.location}/vendor/glew-2.1.0/lib/Release/x64",
     }
 
     includedirs { 
         "%{prj.location}/src",
         "%{prj.location}/vendor",
-        "%{prj.location}/vendor/GLFW/include",
-        "%{prj.location}/vendor/glew-2.1.0/include/GL",
+        "%{prj.location}/vendor/glfw/include/GLFW",
+        "%{prj.location}/vendor/glad/include",
         "%{prj.location}/vendor/msdf-atlas-gen/msdf-atlas-gen",
         "%{prj.location}/vendor/msdf-atlas-gen/msdfgen",
         "%{prj.location}/vendor/msdf-atlas-gen/msdfgen/include",

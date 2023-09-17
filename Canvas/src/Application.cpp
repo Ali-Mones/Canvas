@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <glew.h>
+#include <glad/glad.h>
 #include <glfw3.h>
 
 #include <imgui/imgui.h>
@@ -38,6 +38,12 @@ Application::Application(const char* name, uint32_t windowWidth, uint32_t window
     ImFont* font = io.Fonts->AddFontFromFileTTF("c:/Windows/Fonts/CascadiaCode.ttf", 18.0f);
     IM_ASSERT(font != nullptr);
 
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "GLAD initialisation failed\n";
+        return;
+    }
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -45,12 +51,6 @@ Application::Application(const char* name, uint32_t windowWidth, uint32_t window
     glEnable(GL_MULTISAMPLE);
 
     glfwSwapInterval(1); // enable vsync
-    
-    if (glewInit() != GLEW_OK)
-    {
-        std::cout << "GLEW initialisation failed\n";
-        return;
-    }
 
     std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
 
