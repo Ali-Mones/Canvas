@@ -1,6 +1,6 @@
 #include "Camera.h"
 #include <iostream>
-#include <glew.h>
+#include <glad/glad.h>
 
 static bool s_Init = false;
 

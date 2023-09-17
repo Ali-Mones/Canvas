@@ -1,6 +1,6 @@
 #include "IndexBuffer.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 IndexBuffer::IndexBuffer(const uint32_t count, const void* data)
 {

@@ -2,7 +2,7 @@
 #include <stb_image/stb_image.h>
 
 #include <iostream>
-#include <glew.h>
+#include <glad/glad.h>
 #include <filesystem>
 
 Texture2D::Texture2D()
