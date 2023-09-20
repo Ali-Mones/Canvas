@@ -34,18 +34,14 @@ void Draw()
 	Input();
 	Clear(0, 255, 0);
 
-	Stroke(0);
+	Stroke(24);
 	FontSize(120);
 	Text("today we kill your face", 0, FontLineHeight(arial), arial);
 
-	Fill(200);
-	Rect(200, 200, 400, 400);
-
-	Stroke(0);
-	StrokeWeight(4);
+	Stroke(255);
+	StrokeWeight(10);
 	Fill(255, 255, 0);
 	Ellipse(200, 200, 200, 200);
-
 }
 
 void Input()

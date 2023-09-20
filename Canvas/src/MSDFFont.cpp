@@ -25,7 +25,7 @@ MSDFFont::MSDFFont(const char* filepath)
 			msdf_atlas::TightAtlasPacker packer;
 			packer.setDimensionsConstraint(msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
 			packer.setScale(40.0);
-			packer.setPixelRange(1.0);
+			packer.setPixelRange(2.0);
 			packer.setMiterLimit(1.0);
 			packer.setPadding(0.0);
 
@@ -39,7 +39,7 @@ MSDFFont::MSDFFont(const char* filepath)
 
 			msdf_atlas::ImmediateAtlasGenerator<float, 3, msdf_atlas::msdfGenerator, msdf_atlas::BitmapAtlasStorage<msdfgen::byte, 3>> generator(width, height);
 			generator.setAttributes(msdf_atlas::GeneratorAttributes());
-			generator.setThreadCount(4);
+			generator.setThreadCount(8);
 			generator.generate(Glyphs.data(), Glyphs.size());
 
 			msdfgen::BitmapConstRef<msdfgen::byte, 3> bitmap = (msdfgen::BitmapConstRef<msdfgen::byte, 3>) generator.atlasStorage();

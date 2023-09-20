@@ -160,17 +160,6 @@ void Renderer::Flush()
 		s_RenderData.DrawCalls++;
 	}
 
-	if (s_RenderData.CircleVerticesBase != s_RenderData.CircleVerticesCurr)
-	{
-		uint32_t count = s_RenderData.CircleVerticesCurr - s_RenderData.CircleVerticesBase;
-		s_RenderData.CircleVertexBuffer->SetBuffer(count * sizeof(CircleVertex), s_RenderData.CircleVerticesBase);
-		s_RenderData.CircleVertexArray->Bind();
-		s_RenderData.CircleShader->Bind();
-		s_RenderData.RectIndexBuffer->Bind();
-		glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
-		s_RenderData.DrawCalls++;
-	}
-
 	if (s_RenderData.TextVerticesBase != s_RenderData.TextVerticesCurr)
 	{
 		uint32_t count = s_RenderData.TextVerticesCurr - s_RenderData.TextVerticesBase;
@@ -183,6 +172,17 @@ void Renderer::Flush()
 		s_RenderData.TextShader->Bind();
 		s_RenderData.RectIndexBuffer->Bind();
 		glDrawElements(GL_TRIANGLES, s_RenderData.TextIndexCount, GL_UNSIGNED_INT, nullptr);
+		s_RenderData.DrawCalls++;
+	}
+
+	if (s_RenderData.CircleVerticesBase != s_RenderData.CircleVerticesCurr)
+	{
+		uint32_t count = s_RenderData.CircleVerticesCurr - s_RenderData.CircleVerticesBase;
+		s_RenderData.CircleVertexBuffer->SetBuffer(count * sizeof(CircleVertex), s_RenderData.CircleVerticesBase);
+		s_RenderData.CircleVertexArray->Bind();
+		s_RenderData.CircleShader->Bind();
+		s_RenderData.RectIndexBuffer->Bind();
+		glDrawElements(GL_TRIANGLES, s_RenderData.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
 		s_RenderData.DrawCalls++;
 	}
 }

@@ -170,7 +170,7 @@ namespace Canvas {
 		glm::vec3 pos = glm::vec3(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
 		glm::vec3 dims = glm::vec3(w, h, 0);
 
-		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeColour.a);
+		glm::vec4 strokeColour = s_Data.StrokeColour;
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 

@@ -54,5 +54,7 @@ void main()
 	float sd = median(msd.r, msd.g, msd.b);
 	float screenPxDistance = screenPxRange() * (sd - 0.5);
 	float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
-	o_Colour = mix(vec4(0.0), v_Colour, opacity);
+	float a = mix(0.0, v_Colour.a, opacity);
+	o_Colour.rgb = v_Colour.rgb;
+	o_Colour.a = a;
 }

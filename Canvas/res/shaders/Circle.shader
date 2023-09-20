@@ -49,8 +49,7 @@ void main()
 	float s2 = smoothstep(-v_Thickness - fwd, -v_Thickness + fwd, c);
 
 	vec4 color = mix(v_FillColour, v_StrokeColour, s2);
-	color = mix(color, vec4(0.0), s);
-	if (color.a == 0.0)
-		discard;
+	float a = mix(color.a, 0.0, s);
+	color.a = a;
 	o_Colour = color;
 } 

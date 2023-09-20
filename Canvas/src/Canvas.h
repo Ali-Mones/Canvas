@@ -247,9 +247,9 @@ namespace Canvas {
 	 * @brief Set the stroke colour of the next drawn shape
 	 */
 	void CANVAS_API Stroke(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
-	inline void CANVAS_API Stroke(uint32_t grey) { Fill(grey, grey, grey); }
-	inline void CANVAS_API Stroke(Vector3 colour) { Fill(colour.x, colour.y, colour.z); }
-	inline void CANVAS_API Stroke(Vector4 colour) { Fill(colour.x, colour.y, colour.z, colour.w); }
+	inline void CANVAS_API Stroke(uint32_t grey) { Stroke(grey, grey, grey); }
+	inline void CANVAS_API Stroke(Vector3 colour) { Stroke(colour.x, colour.y, colour.z); }
+	inline void CANVAS_API Stroke(Vector4 colour) { Stroke(colour.x, colour.y, colour.z, colour.w); }
 
 	/**
 	 * @brief Set the stroke weight of the next drawn shapes
