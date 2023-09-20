@@ -12,31 +12,35 @@ Font cambria;
 bool hflip = false;
 bool vflip = false;
 
+CanvasSound sound;
+
 void Input();
 
 void Setup()
 {
+	/*
+	* TODO: checkout precompiled header
+	* TODO: Add namespace for Canvas project (think of name other than Canvas)
+	*/
 	CreateCanvas(1280, 720);
 	t = CreateTexture("res/textures/heart.png");
 	player = CreateTexture("res/textures/player.png");
 	arial = LoadFont("C:/Windows/Fonts/Arial.ttf");
 	cambria = LoadFont("C:/Windows/Fonts/cambriab.ttf");
+	sound = LoadSound("res/sounds/chomp.wav", true);
+	SetSoundVolume(sound, 0.2f);
 }
 
 void Draw()
 {
-	/*	TODO:
-			add custom vector classes + adding API changes for them
-	*/
-
-	SetPositionMode(PositionMode::Center);
 	SetOriginPosition(OriginPosition::Center);
+	SetPositionMode(PositionMode::Center);
 	Input();
 	Clear(0, 255, 0);
 
 	Stroke(24);
 	FontSize(120);
-	Text("today we kill your face", 0, FontLineHeight(arial), arial);
+	Text("today we kill your face", 0, 0, arial);
 
 	Stroke(255);
 	StrokeWeight(10);

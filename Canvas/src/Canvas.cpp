@@ -8,12 +8,13 @@
 #include "Camera.h"
 #include "Texture2D.h"
 #include "MSDFFont.h"
+#include "Sound.h"
 
 struct CanvasData
 {
 	/* Attributes */
-	Canvas::PositionMode PositionMode = Canvas::PositionMode::Center;
-	Canvas::OriginPosition OriginPosition = Canvas::OriginPosition::BottomLeft;
+	Canvas::PositionMode PositionMode = Canvas::PositionMode::TopLeft;
+	Canvas::OriginPosition OriginPosition = Canvas::OriginPosition::TopLeft;
 
 	glm::vec4 FillColour = glm::vec4(1);
 
@@ -30,6 +31,7 @@ struct CanvasData
 
 	std::unordered_map<uint32_t, Texture2D*> TexturesMap;
 	std::unordered_map<uint32_t, MSDFFont*> FontsMap;
+	std::unordered_map<uint32_t, Sound*> SoundsMap;
 };
 
 static CanvasData s_Data;
@@ -309,6 +311,40 @@ namespace Canvas {
 		s_Data.VerticalFlip = value;
 	}
 
+	CanvasSound LoadSound(const char* filepath, bool looping)
+	{
+		static uint32_t id = 0;
+		Sound* sound = new Sound(filepath, looping);
+		s_Data.SoundsMap[id] = sound;
+		return id++;
+	}
+
+	void PlaySound(CanvasSound sound)
+	{
+		s_Data.SoundsMap[sound]->Play();
+	}
+
+	void StopSound(CanvasSound sound)
+	{
+		s_Data.SoundsMap[sound]->Stop();
+	}
+
+	bool IsSoundPlaying(CanvasSound sound)
+	{
+		return s_Data.SoundsMap[sound]->IsPlaying();
+	}
+
+	void SetSoundVolume(CanvasSound sound, float volume)
+	{
+		volume = std::clamp(volume, 0.0f, 1.0f);
+		s_Data.SoundsMap[sound]->SetVolume(volume);
+	}
+
+	float GetSoundVolume(CanvasSound sound)
+	{
+		return s_Data.SoundsMap[sound]->Volume();
+	}
+
 	Vector2 MousePosition()
 	{
 		double xpos, ypos;
@@ -357,5 +393,7 @@ namespace Canvas {
 			delete texture.second;
 		for (auto font : s_Data.FontsMap)
 			delete font.second;
+		for (auto sound : s_Data.SoundsMap)
+			delete sound.second;
 	}
 }

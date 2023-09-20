@@ -41,15 +41,15 @@ project "Canvas"
         "%{prj.location}/vendor/stb_image_write/**.hpp",
         "%{prj.location}/vendor/stb_image_write/**.cpp",
         "%{prj.location}/vendor/stb_image_write/**.h",
+
+        "%{prj.location}/vendor/miniaudio/**.hpp",
+        "%{prj.location}/vendor/miniaudio/**.cpp",
+        "%{prj.location}/vendor/miniaudio/**.h",
     }
 
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
-
-    postbuildcommands {
-        "{COPY} %{wks.location}bin\\".. outputdir .."\\%{prj.name}\\Canvas.dll %{wks.location}bin\\".. outputdir .."\\Sandbox\\"
-    }
 
     defines {
         "BUILD_DLL",
@@ -57,16 +57,8 @@ project "Canvas"
 
     links { 
         "glfw",
-        -- "glfw3_mt",
-        -- "glfw3dll",
-        "opengl32",
         "msdf-atlas-gen",
         "glad"
-    }
-
-    libdirs {
-        -- "%{prj.location}/vendor/GLFW/lib",
-        -- "%{prj.location}/vendor/glew-2.1.0/lib/Release/x64",
     }
 
     includedirs { 
@@ -78,6 +70,27 @@ project "Canvas"
         "%{prj.location}/vendor/msdf-atlas-gen/msdfgen",
         "%{prj.location}/vendor/msdf-atlas-gen/msdfgen/include",
     }
+
+    filter "system:windows"
+        postbuildcommands {
+            "{COPY} %{wks.location}bin\\".. outputdir .."\\%{prj.name}\\Canvas.dll %{wks.location}bin\\".. outputdir .."\\Sandbox\\"
+        }
+
+        links {
+            "opengl32",
+        }
+
+    filter "system:linux"
+        --postbuildcommands {
+        --    "{COPY} %{wks.location}bin\\".. outputdir .."\\%{prj.name}\\libCanvas.so %{wks.location}bin\\".. outputdir .."\\Sandbox\\"
+        --}
+
+        links {
+            "GL",
+            "pthread",
+            "m",
+            "dl",
+        }
 
     filter "configurations:Debug"
         defines { "DEBUG" }

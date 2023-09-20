@@ -6,6 +6,7 @@
 
 typedef uint32_t Texture;
 typedef uint32_t Font;
+typedef uint32_t CanvasSound;
 
 namespace Canvas {
 
@@ -288,6 +289,39 @@ namespace Canvas {
 	 * @brief Set flipping of the next drawn textures about the x-axis
 	 */
 	void CANVAS_API FlipTextureVertically(bool value);
+
+	/**
+	 * @brief Loads a sound file.
+	 * @brief WARNING: Do not use this funcion in the Draw() function but in the Setup() function.
+	 * 
+	 * @return ID of the sound.
+	 */
+	CanvasSound CANVAS_API LoadSound(const char* filepath, bool looping);
+
+	/**
+	 * @brief Starts playing the sound.
+	 */
+	void CANVAS_API PlaySound(CanvasSound sound);
+
+	/**
+	 * @brief Stops playing the sound.
+	 */
+	void CANVAS_API StopSound(CanvasSound sound);
+
+	/**
+	 * @return true if sound is playing, false otherwise.
+	 */
+	bool CANVAS_API IsSoundPlaying(CanvasSound sound);
+
+	/**
+	 * @brief Sets the volume of the sound. Values should be from 0 to 1.
+	 */
+	void CANVAS_API SetSoundVolume(CanvasSound sound, float volume);
+	
+	/**
+	 * @return The volume of the sound, a value from 0 to 1.
+	 */
+	float CANVAS_API GetSoundVolume(CanvasSound sound);
 
 	/*
 	 * @return Current position of the mouse.

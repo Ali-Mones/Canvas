@@ -55,11 +55,9 @@ Texture2D::Texture2D(void* data, uint32_t width, uint32_t height, uint32_t chann
 Texture2D::Texture2D(const std::string& filepath)
 	: m_RendererID(0), m_Filepath(filepath), m_Channels(0)
 {
-	bool exists = std::filesystem::is_regular_file(filepath);
-
-	if (!exists)
+	if (!std::filesystem::is_regular_file(filepath))
 	{
-		std::cout << "File couldn't be located at " << std::filesystem::current_path().string() << '\\' << std::filesystem::path(filepath).make_preferred().string() << std::endl;
+		std::cout << "(ERROR): Couldn't load texture file located at " << std::filesystem::current_path().string() << '\\' << std::filesystem::path(filepath).make_preferred().string() << std::endl;
 		return;
 	}
 
