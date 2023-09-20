@@ -1,5 +1,5 @@
 #include "VertexBuffer.h"
-#include <glew.h>
+#include <glad/glad.h>
 
 VertexBuffer::VertexBuffer(uint32_t maxSize)
 {

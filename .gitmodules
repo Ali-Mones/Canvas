@@ -2,3 +2,7 @@
 	path = Canvas/vendor/msdf-atlas-gen
 	url = https://github.com/TheCherno/msdf-atlas-gen.git
 	ignore  = dirty
+[submodule "Canvas/vendor/glfw"]
+	path = Canvas/vendor/glfw
+	url = https://github.com/Ali-Mones/glfw.git
+	ignore  = dirty

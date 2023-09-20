@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 #include <iostream>
-#include <glew.h>
+#include <glad/glad.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <stb_image_write/stb_image_write.h>
 

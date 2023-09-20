@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glew.h>
+#include <glad/glad.h>
 #include <cstdint>
 #include <string>
 
