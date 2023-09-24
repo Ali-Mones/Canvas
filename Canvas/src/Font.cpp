@@ -1,4 +1,4 @@
-#include "MSDFFont.h"
+#include "Font.h"
 
 #include <msdfgen.h>
 #include <msdfgen-ext.h>
@@ -7,7 +7,7 @@
 #include <iostream>
 #include <filesystem>
 
-MSDFFont::MSDFFont(const char* filepath)
+Font::Font(const char* filepath)
 {
 	if (!std::filesystem::is_regular_file(filepath))
 	{
@@ -62,7 +62,7 @@ MSDFFont::MSDFFont(const char* filepath)
 	}
 }
 
-MSDFFont::~MSDFFont()
+Font::~Font()
 {
 	delete FontAtlas;
 }

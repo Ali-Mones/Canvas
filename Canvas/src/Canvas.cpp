@@ -8,7 +8,7 @@
 #include "Window.h"
 #include "Camera.h"
 #include "Texture2D.h"
-#include "MSDFFont.h"
+#include "Font.h"
 #include "Sound.h"
 
 struct CanvasData
@@ -31,13 +31,13 @@ struct CanvasData
 	float FontSize = 18;
 
 	std::unordered_map<uint32_t, Texture2D*> TexturesMap;
-	std::unordered_map<uint32_t, MSDFFont*> FontsMap;
+	std::unordered_map<uint32_t, Font*> FontsMap;
 	std::unordered_map<uint32_t, Sound*> SoundsMap;
 };
 
 static CanvasData s_Data;
 
-static Canvas::Vector3 GetTextDimensions(const std::string& text, MSDFFont* font)
+static Canvas::Vector3 GetTextDimensions(const std::string& text, Font* font)
 {
 	const auto& metrics = font->FontGeometry.getMetrics();
 
@@ -285,7 +285,7 @@ namespace Canvas {
 
 	Font LoadFont(const char* filepath)
 	{
-		MSDFFont* font = new MSDFFont(filepath);
+		::Font* font = new ::Font(filepath);
 		s_Data.FontsMap[font->FontAtlas->RendererID()] = font;
 		return font->FontAtlas->RendererID();
 	}
@@ -376,36 +376,36 @@ namespace Canvas {
 		s_Data.VerticalFlip = value;
 	}
 
-	CanvasSound LoadSound(const char* filepath, bool looping)
+	Sound LoadSound(const char* filepath, bool looping)
 	{
 		static uint32_t id = 0;
-		Sound* sound = new Sound(filepath, looping);
+		::Sound* sound = new ::Sound(filepath, looping);
 		s_Data.SoundsMap[id] = sound;
 		return id++;
 	}
 
-	void PlaySound(CanvasSound sound)
+	void PlaySound(Sound sound)
 	{
 		s_Data.SoundsMap[sound]->Play();
 	}
 
-	void StopSound(CanvasSound sound)
+	void StopSound(Sound sound)
 	{
 		s_Data.SoundsMap[sound]->Stop();
 	}
 
-	bool IsSoundPlaying(CanvasSound sound)
+	bool IsSoundPlaying(Sound sound)
 	{
 		return s_Data.SoundsMap[sound]->IsPlaying();
 	}
 
-	void SetSoundVolume(CanvasSound sound, float volume)
+	void SetSoundVolume(Sound sound, float volume)
 	{
 		volume = std::clamp(volume, 0.0f, 1.0f);
 		s_Data.SoundsMap[sound]->SetVolume(volume);
 	}
 
-	float GetSoundVolume(CanvasSound sound)
+	float GetSoundVolume(Sound sound)
 	{
 		return s_Data.SoundsMap[sound]->Volume();
 	}

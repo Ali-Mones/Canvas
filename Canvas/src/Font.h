@@ -5,10 +5,10 @@
 
 #include "Texture2D.h"
 
-struct MSDFFont
+struct Font
 {
-	MSDFFont(const char* filepath);
-	~MSDFFont();
+	Font(const char* filepath);
+	~Font();
 	msdf_atlas::FontGeometry FontGeometry;
 	std::vector<msdf_atlas::GlyphGeometry> Glyphs;
 	Texture2D* FontAtlas;

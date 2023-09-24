@@ -12,7 +12,7 @@ Font cambria;
 bool hflip = false;
 bool vflip = false;
 
-CanvasSound sound;
+Sound sound;
 
 void Input();
 
@@ -20,7 +20,6 @@ void Setup()
 {
 	/*
 	* TODO: checkout precompiled header
-	* TODO: Add namespace for Canvas project (think of name other than Canvas)
 	* TODO: Check sorting for transparency on batching
 	* TODO: Return origin to be center
 	*/
@@ -35,7 +34,7 @@ void Setup()
 
 void Draw()
 {
-	SetOriginPosition(OriginPosition::TopRight);
+	SetOriginPosition(OriginPosition::Center);
 	SetPositionMode(PositionMode::Center);
 	Input();
 	Clear(0, 255, 0);

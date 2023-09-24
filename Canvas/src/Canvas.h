@@ -4,11 +4,11 @@
 #include "Input.h"
 #include "CanvasCamera.h"
 
-typedef uint32_t Texture;
-typedef uint32_t Font;
-typedef uint32_t CanvasSound;
-
 namespace Canvas {
+
+	typedef std::uint32_t Texture;
+	typedef std::uint32_t Font;
+	typedef std::uint32_t Sound;
 
 	enum class PositionMode
 	{
@@ -325,32 +325,32 @@ namespace Canvas {
 	 * 
 	 * @return ID of the sound.
 	 */
-	CanvasSound CANVAS_API LoadSound(const char* filepath, bool looping);
+	Sound CANVAS_API LoadSound(const char* filepath, bool looping);
 
 	/**
 	 * @brief Starts playing the sound.
 	 */
-	void CANVAS_API PlaySound(CanvasSound sound);
+	void CANVAS_API PlaySound(Sound sound);
 
 	/**
 	 * @brief Stops playing the sound.
 	 */
-	void CANVAS_API StopSound(CanvasSound sound);
+	void CANVAS_API StopSound(Sound sound);
 
 	/**
 	 * @return true if sound is playing, false otherwise.
 	 */
-	bool CANVAS_API IsSoundPlaying(CanvasSound sound);
+	bool CANVAS_API IsSoundPlaying(Sound sound);
 
 	/**
 	 * @brief Sets the volume of the sound. Values should be from 0 to 1.
 	 */
-	void CANVAS_API SetSoundVolume(CanvasSound sound, float volume);
+	void CANVAS_API SetSoundVolume(Sound sound, float volume);
 	
 	/**
 	 * @return The volume of the sound, a value from 0 to 1.
 	 */
-	float CANVAS_API GetSoundVolume(CanvasSound sound);
+	float CANVAS_API GetSoundVolume(Sound sound);
 
 	/*
 	 * @return Current position of the mouse.

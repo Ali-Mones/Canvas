@@ -11,7 +11,7 @@
 #include "VertexBuffer.h"
 #include "Vertex.h"
 #include "Texture2D.h"
-#include "MSDFFont.h"
+#include "Font.h"
 
 #include <msdfgen.h>
 #include <msdfgen-ext.h>
@@ -50,7 +50,7 @@ struct RenderData
 	TextVertex* TextVerticesCurr;
 	Shader* TextShader;
 
-	const MSDFFont* FontTextureSlots[32];
+	const Font* FontTextureSlots[32];
 	uint32_t FontTextureSlotIndex = 0;
 
 	glm::vec4 UnitRectVertices[4];
@@ -311,7 +311,7 @@ void Renderer::Ellipse(const glm::vec3& position, const glm::vec3& dimensions, c
 	s_RenderData.RectCount++;
 }
 
-void Renderer::Text(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& colour, const std::string& text, const MSDFFont* font, uint32_t fontSize)
+void Renderer::Text(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& colour, const std::string& text, const Font* font, uint32_t fontSize)
 {
 	assert(font);
 
