@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <glm/gtx/compatibility.hpp>
 
 #include "Renderer.h"
@@ -16,10 +17,10 @@ struct CanvasData
 	Canvas::PositionMode PositionMode = Canvas::PositionMode::TopLeft;
 	Canvas::OriginPosition OriginPosition = Canvas::OriginPosition::TopLeft;
 
-	glm::vec4 FillColour = glm::vec4(1);
+	Canvas::Vector4 FillColour = Canvas::Vector4(1.0f);
 
-	glm::vec4 StrokeColour = glm::vec4(1);
-	uint32_t StrokeWeight = 1;
+	Canvas::Vector4 StrokeColour = Canvas::Vector4(Canvas::Vector3(0.0f), 1.0f);
+	float StrokeWeight = 1;
 
 	float Z = -1.0f;
 
@@ -27,7 +28,7 @@ struct CanvasData
 	bool HorizontalFlip = false;
 	bool VerticalFlip = false;
 
-	uint32_t FontSize = 18;
+	float FontSize = 18;
 
 	std::unordered_map<uint32_t, Texture2D*> TexturesMap;
 	std::unordered_map<uint32_t, MSDFFont*> FontsMap;
@@ -35,9 +36,8 @@ struct CanvasData
 };
 
 static CanvasData s_Data;
-static uint32_t textureSlot = 1;
 
-static glm::vec2 GetTextDimensions(const std::string& text, MSDFFont* font)
+static Canvas::Vector3 GetTextDimensions(const std::string& text, MSDFFont* font)
 {
 	const auto& metrics = font->FontGeometry.getMetrics();
 
@@ -51,7 +51,7 @@ static glm::vec2 GetTextDimensions(const std::string& text, MSDFFont* font)
 			continue;
 		if (c == '\n')
 		{
-			textWidth = std::max(textWidth, x);
+			//textWidth = std::max(textWidth, x);
 			x = 0;
 			y -= fsScale * metrics.lineHeight;
 			continue;
@@ -64,50 +64,52 @@ static glm::vec2 GetTextDimensions(const std::string& text, MSDFFont* font)
 			x += fsScale * advance;
 		}
 	}
-
-	textWidth = std::max(x, textWidth);
+	textWidth = x;
 	double textHeight = fsScale * metrics.lineHeight;
 
-	return glm::vec2(textWidth, textHeight);
+	return Canvas::Vector3(textWidth, textHeight, 0.0f);
 }
 
-static void StandardisePosition(int& x, int& y, uint32_t w, uint32_t h)
+static Canvas::Vector3 StandardisePosition(const Canvas::Vector3& position, const Canvas::Vector3& dimensions)
 {
+	Canvas::Vector3 pos = position;
 	if (s_Data.OriginPosition == Canvas::OriginPosition::Center)
 	{
-		x += Canvas::WindowWidth() / 2;
-		y += Canvas::WindowHeight() / 2;
+		pos.x += Canvas::WindowWidth() / 2;
+		pos.y += Canvas::WindowHeight() / 2;
 	}
 	else if (s_Data.OriginPosition == Canvas::OriginPosition::BottomRight)
-		x = Canvas::WindowWidth() - x;
+		pos.x = Canvas::WindowWidth() - pos.x;
 	else if (s_Data.OriginPosition == Canvas::OriginPosition::TopLeft)
-		y = Canvas::WindowHeight() - y;
+		pos.y = Canvas::WindowHeight() - pos.y;
 	else if (s_Data.OriginPosition == Canvas::OriginPosition::TopRight)
 	{
-		x = Canvas::WindowWidth() - x;
-		y = Canvas::WindowHeight() - y;
+		pos.x = Canvas::WindowWidth() - pos.x;
+		pos.y = Canvas::WindowHeight() - pos.y;
 	}
 
 	if (s_Data.PositionMode == Canvas::PositionMode::TopLeft)
 	{
-		x += w / 2;
-		y -= h / 2;
+		pos.x += dimensions.x / 2;
+		pos.y -= dimensions.y / 2;
 	}
 	else if (s_Data.PositionMode == Canvas::PositionMode::BottomLeft)
 	{
-		x += w / 2;
-		y += h / 2;
+		pos.x += dimensions.x / 2;
+		pos.y += dimensions.y / 2;
 	}
 	else if (s_Data.PositionMode == Canvas::PositionMode::TopRight)
 	{
-		x -= w / 2;
-		y -= h / 2;
+		pos.x -= dimensions.x / 2;
+		pos.y -= dimensions.y / 2;
 	}
 	else if (s_Data.PositionMode == Canvas::PositionMode::BottomRight)
 	{
-		x -= w / 2;
-		y += h / 2;
+		pos.x -= dimensions.x / 2;
+		pos.y += dimensions.y / 2;
 	}
+
+	return pos;
 }
 
 namespace Canvas {
@@ -122,77 +124,112 @@ namespace Canvas {
 		s_Data.OriginPosition = position;
 	}
 
-	void Clear(uint32_t r, uint32_t g, uint32_t b)
+	void Clear(const Vector3& colour)
 	{
-		Renderer::Clear(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, 1));
+		Renderer::Clear(glm::vec4(colour.x / 255.0f, colour.y / 255.0f, colour.z / 255.0f, 1));
 		s_Data.Z = -1.0f;
 	}
 
-	void Rect(int x, int y, uint32_t w, uint32_t h)
+	void Rect(const Vector3& position, const Vector3& dimensions)
 	{
-		StandardisePosition(x, y, w, h);
-
-		glm::vec3 pos = glm::vec3(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
-		glm::vec3 dims = glm::vec3(w, h, 0);
-
-		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeWeight ? s_Data.StrokeColour.a : 0);
+		Vector3 pos = StandardisePosition(position, dimensions);
+		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.x, s_Data.StrokeColour.y, s_Data.StrokeColour.z, s_Data.StrokeWeight ? s_Data.StrokeColour.w : 0);
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
+		Renderer::Rect(pos, { dimensions.x, dimensions.y, dimensions.z }, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
 	}
 
-	void TexturedRect(int x, int y, uint32_t w, uint32_t h, Texture texture)
+	void Rect(const Vector2& position, const Vector2& dimensions)
 	{
-		StandardisePosition(x, y, w, h);
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Vector3 pos = { position, z };
+		Vector3 dims = { dimensions, 0.0f };
+		Rect(pos, dims);
+	}
 
-		float width = w, height = h;
+	void Rect(float x, float y, float w, float h)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Vector3 pos = { x, y, z };
+		Vector3 dims = { w, h, 0.0f };
+		Rect(pos, dims);
+	}
+
+	void TexturedRect(const Vector3& position, const Vector3& dimensions, Texture texture)
+	{
+		Vector3 pos = StandardisePosition(position, dimensions);
+
+		float w = dimensions.x, h = dimensions.y;
 		if (s_Data.HorizontalFlip)
-			width = -width;
+			w = -w;
 		if (s_Data.VerticalFlip)
-			height = -height;
+			h = -h;
 
-		glm::vec3 pos = glm::vec3(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
-		glm::vec3 dims = glm::vec3(width, height, 0);
-
-		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeWeight ? s_Data.StrokeColour.a : 0);
+		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.x, s_Data.StrokeColour.y, s_Data.StrokeColour.z, s_Data.StrokeWeight ? s_Data.StrokeColour.w : 0);
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
 		if (s_Data.TexturesMap.count(texture))
-			Renderer::Rect(pos, dims, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, s_Data.TexturesMap[texture], s_Data.TilingFactor);
+			Renderer::Rect(pos, { w, h, 0.0f }, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, s_Data.TexturesMap[texture], s_Data.TilingFactor);
 		else
 			std::cout << "No Texture found with id = " << texture << std::endl;
 	}
 
-	void Ellipse(int x, int y, uint32_t w, uint32_t h)
+	void TexturedRect(const Vector2& position, const Vector2& dimensions, Texture texture)
 	{
-		StandardisePosition(x, y, w, h);
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Vector3 pos = { position, z };
+		Vector3 dims = { dimensions, 0.0f };
+		TexturedRect(pos, dims, texture);
+	}
 
-		glm::vec3 pos = glm::vec3(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
-		glm::vec3 dims = glm::vec3(w, h, 0);
+	void TexturedRect(float x, float y, float w, float h, Texture texture)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Vector3 pos = { x, y, z };
+		Vector3 dims = { w, h, 0.0f };
+		TexturedRect(pos, dims, texture);
+	}
 
+	void Ellipse(const Vector3& position, const Vector3& dimensions)
+	{
+		Vector3 pos = StandardisePosition(position, dimensions);
 		glm::vec4 strokeColour = s_Data.StrokeColour;
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
 		if (strokeColour == glm::vec4(0))
-			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, 0.0f, 0.0f);
+			Renderer::Ellipse(pos, { dimensions.x, dimensions.y, dimensions.z }, s_Data.FillColour, strokeColour, 0.0f, 0.0f);
 		else
-			Renderer::Ellipse(pos, dims, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, 0.0f);
+			Renderer::Ellipse(pos, { dimensions.x, dimensions.y, dimensions.z }, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, 0.0f);
 	}
 
-	void Line(int x1, int y1, int x2, int y2)
+	void Ellipse(const Vector2& position, const Vector2& dimensions)
 	{
-		s_Data.Z += std::numeric_limits<float>::epsilon();
+		Vector3 pos = { position, s_Data.Z += std::numeric_limits<float>::epsilon() };
+		Vector3 dims = { dimensions, 0.0f };
+		Ellipse(pos, dims);
+	}
 
-		glm::vec3 p1(x1, y1, s_Data.Z);
-		glm::vec3 p2(x2, y2, s_Data.Z);
-		glm::vec3 pos((p1 + p2) / 2.0f);
-		glm::vec3 dims(glm::distance(p1, p2), s_Data.StrokeWeight, 0);
-		float angle = glm::atan((float)(y2 - y1) / (x2 - x1));
+	void Ellipse(float x, float y, float w, float h)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Ellipse({ x, y, z }, { w, h, 0.0f });
+	}
 
-		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.r, s_Data.StrokeColour.g, s_Data.StrokeColour.b, s_Data.StrokeWeight ? s_Data.StrokeColour.a : 0);
+	void Line(const Vector3& p1, const Vector3& p2)
+	{
+		Vector3 pos = (p1 + p2) / 2.0f;
+		float distance = glm::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+		Vector3 dims = Vector3(distance, s_Data.StrokeWeight, 0);
+		float angle = glm::atan((float)(p2.y - p1.y) / (p2.x - p1.x)); // TODO: fix for 3D use quat ?
+
+		pos = StandardisePosition(pos, dims);
+		Vector3 c1 = StandardisePosition(p1, { 2, 2 });
+		Vector3 c2 = StandardisePosition(p2, { 2, 2 });
+
+		glm::vec4 strokeColour = glm::vec4(s_Data.StrokeColour.x, s_Data.StrokeColour.y, s_Data.StrokeColour.z, s_Data.StrokeWeight ? s_Data.StrokeColour.w : 0);
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
@@ -201,33 +238,49 @@ namespace Canvas {
 		float diameter = s_Data.StrokeWeight;
 		glm::vec3 circleDims(diameter, diameter, 0);
 
-		Renderer::Ellipse(p1, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
-		Renderer::Ellipse(p2, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
+		Renderer::Ellipse(c1, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
+		Renderer::Ellipse(c2, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
 	}
 
-	void BezierCurve(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+	void Line(const Vector2& p1, const Vector2& p2)
 	{
-		s_Data.Z += std::numeric_limits<float>::epsilon();
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Line({ p1, z }, { p2, z });
+	}
 
-		glm::vec3 v1(x1, y1, s_Data.Z);
-		glm::vec3 v2(x2, y2, s_Data.Z);
-		glm::vec3 v3(x3, y3, s_Data.Z);
-		glm::vec3 v4(x4, y4, s_Data.Z);
+	void Line(float x1, float y1, float x2, float y2)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Line({ x1, y1, z }, { x2, y2, z });
+	}
 
-		std::vector<glm::vec3> points;
-
+	void BezierCurve(const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4)
+	{
+		std::vector<Vector3> points;
 		for (float t = 0.0f; t <= 1.0001f; t += 0.02f)
 		{
-			glm::vec3 b = (float) glm::pow(1 - t, 3) * v1 + 3 * (float) glm::pow(1 - t, 2) * t * v2 + 3 * (1 - t) * (float) glm::pow(t, 2) * v3 + (float) glm::pow(t, 3) * v4;
+			Vector3 b = p1 * (float)glm::pow(1 - t, 3) + p2 * 3.0f * (float)glm::pow(1 - t, 2) * t + p3 * 3.0f * (1 - t) * (float)glm::pow(t, 2) + p4 * (float)glm::pow(t, 3);
 			points.push_back(b);
 		}
 
 		for (int i = 1; i < points.size(); i++)
 		{
-			glm::vec3& v1 = points[i - 1];
-			glm::vec3& v2 = points[i];
-			Line(v1.x, v1.y, v2.x, v2.y);
+			Vector3& v1 = points[i - 1];
+			Vector3& v2 = points[i];
+			Line(v1, v2);
 		}
+	}
+
+	void BezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3, const Vector2& p4)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		BezierCurve({ p1, z }, { p2, z }, { p3, z }, { p4, z });
+	}
+
+	void BezierCurve(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		BezierCurve({ x1, y1, z }, { x2, y2, z }, { x3, y3, z }, { x4, y4, z });
 	}
 
 	Font LoadFont(const char* filepath)
@@ -237,23 +290,35 @@ namespace Canvas {
 		return font->FontAtlas->RendererID();
 	}
 
-	void FontSize(uint32_t size)
+	void FontSize(float size)
 	{
 		s_Data.FontSize = size;
 	}
 
-	void Text(const char* text, int x, int y, Font font)
+	void Text(const char* text, const Vector3& position, Font font)
 	{
-		glm::vec2 dims = GetTextDimensions(text, s_Data.FontsMap[font]);
-		StandardisePosition(x, y, s_Data.FontSize * dims.x, s_Data.FontSize * dims.y);
+		Vector3 dims = GetTextDimensions(text, s_Data.FontsMap[font]);
+		Vector3 pos = StandardisePosition(position, { s_Data.FontSize * dims.x, s_Data.FontSize * dims.y });
+		Renderer::Text(pos, dims, 0.0f, s_Data.StrokeColour, text, s_Data.FontsMap[font], s_Data.FontSize);
+	}
 
-		glm::vec3 pos(x, y, s_Data.Z += std::numeric_limits<float>::epsilon());
-		Renderer::Text(pos, glm::vec3(dims, 0.0f), 0.0f, s_Data.StrokeColour, text, s_Data.FontsMap[font], s_Data.FontSize);
+	void Text(const char* text, const Vector2& position, Font font)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Vector3 pos = { position, z };
+		Text(text, pos, font);
+	}
+
+	void Text(const char* text, float x, float y, Font font)
+	{
+		float z = s_Data.Z += std::numeric_limits<float>::epsilon();
+		Vector3 position = { x, y, z };
+		Text(text, position, font);
 	}
 
 	void Point(int x, int y)
 	{
-		glm::vec4 oldFill = s_Data.FillColour;
+		Vector4 oldFill = s_Data.FillColour;
 		s_Data.FillColour = s_Data.StrokeColour;
 		Rect(x, y, 2, 2);
 		s_Data.FillColour = oldFill;
@@ -266,24 +331,24 @@ namespace Canvas {
 		return t->RendererID();
 	}
 
-	void Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a)
+	void Fill(const Vector4& colour)
 	{
-		s_Data.FillColour = glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+		s_Data.FillColour = colour / 255.0f;
 	}
 
-	void Stroke(uint32_t r, uint32_t g, uint32_t b, uint32_t a)
+	void Stroke(const Vector4& colour)
 	{
-		s_Data.StrokeColour = glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+		s_Data.StrokeColour = colour / 255.0f;
 	}
 
-	void StrokeWeight(uint32_t weight)
+	void StrokeWeight(float weight)
 	{
 		s_Data.StrokeWeight = weight;
 	}
 
 	void NoFill()
 	{
-		s_Data.FillColour = glm::vec4(0);
+		s_Data.FillColour = Vector4(0.0f);
 	}
 
 	void NoStroke()
@@ -351,25 +416,23 @@ namespace Canvas {
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
 		glfwGetCursorPos(window, &xpos, &ypos);
 		glm::vec4 pos = Camera::Get().GetWorldPosition(xpos, ypos);
+
+		if (s_Data.OriginPosition == Canvas::OriginPosition::Center)
+		{
+			pos.x -= WindowWidth() / 2;
+			pos.y -= WindowHeight() / 2;
+		}
+		else if (s_Data.OriginPosition == OriginPosition::BottomRight)
+			pos.x = WindowWidth() - pos.x;
+		else if (s_Data.OriginPosition == OriginPosition::TopLeft)
+			pos.y = WindowHeight() - pos.y;
+		else if (s_Data.OriginPosition == OriginPosition::TopRight)
+		{
+			pos.x = WindowWidth() - pos.x;
+			pos.y = WindowHeight() - pos.y;
+		}
+
 		return Vector2(pos.x, pos.y);
-	}
-
-	float MouseX()
-	{
-		double xpos, ypos;
-		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
-		glfwGetCursorPos(window, &xpos, &ypos);
-		glm::vec4 pos = Camera::Get().GetWorldPosition(xpos, ypos);
-		return pos.x;
-	}
-
-	float MouseY()
-	{
-		double xpos, ypos;
-		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
-		glfwGetCursorPos(window, &xpos, &ypos);
-		glm::vec4 pos = Camera::Get().GetWorldPosition(xpos, ypos);
-		return pos.y;
 	}
 
 	uint32_t WindowWidth()

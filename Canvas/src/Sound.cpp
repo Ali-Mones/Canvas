@@ -20,7 +20,10 @@ Sound::Sound(const char* filepath, bool looping)
 {
     if (!std::filesystem::is_regular_file(filepath))
     {
-        std::cout << "(ERROR): Couldn't load sound file located at " << std::filesystem::current_path().string() + '\\' + std::filesystem::path(filepath).make_preferred().string() << std::endl;
+        if (std::filesystem::absolute(filepath).make_preferred() == std::filesystem::path(filepath).make_preferred())
+            std::cout << "(ERROR): Couldn't load sound file located at " << filepath << std::endl;
+        else
+            std::cout << "(ERROR): Couldn't load sound file located at " << std::filesystem::current_path().string() << '\\' << std::filesystem::path(filepath).make_preferred().string() << std::endl;
         return;
     }
 

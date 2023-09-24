@@ -21,6 +21,8 @@ void Setup()
 	/*
 	* TODO: checkout precompiled header
 	* TODO: Add namespace for Canvas project (think of name other than Canvas)
+	* TODO: Check sorting for transparency on batching
+	* TODO: Return origin to be center
 	*/
 	CreateCanvas(1280, 720);
 	t = CreateTexture("res/textures/heart.png");
@@ -33,19 +35,16 @@ void Setup()
 
 void Draw()
 {
-	SetOriginPosition(OriginPosition::Center);
+	SetOriginPosition(OriginPosition::TopRight);
 	SetPositionMode(PositionMode::Center);
 	Input();
 	Clear(0, 255, 0);
 
+	Rect(0, 0, 200, 200);
+
 	Stroke(24);
 	FontSize(120);
 	Text("today we kill your face", 0, 0, arial);
-
-	Stroke(255);
-	StrokeWeight(10);
-	Fill(255, 255, 0);
-	Ellipse(200, 200, 200, 200);
 }
 
 void Input()

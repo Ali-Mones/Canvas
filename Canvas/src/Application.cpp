@@ -32,7 +32,7 @@ Application::Application(const char* name, uint32_t windowWidth, uint32_t window
     ImGui::StyleColorsLight();
 
     ImGui_ImplGlfw_InitForOpenGL(m_Window->NativeWindow(), true);
-    const char* glsl_version = "#version 330";
+    const char* glsl_version = "#version 450";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     ImFont* font = io.Fonts->AddFontFromFileTTF("c:/Windows/Fonts/CascadiaCode.ttf", 18.0f);

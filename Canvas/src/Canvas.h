@@ -41,22 +41,25 @@ namespace Canvas {
 		{
 		}
 
-		Vector2 operator +(const Vector2& other) { return Vector2(x + other.x, y + other.y); }
-		Vector2 operator +(float c) { return Vector2(x + c, y + c); }
+		template<typename T>
+		operator T() { return *(T*)(this); }
+
+		Vector2 operator +(const Vector2& other) const { return Vector2(x + other.x, y + other.y); }
+		Vector2 operator +(float c) const { return Vector2(x + c, y + c); }
 		void operator +=(const Vector2& other) { *this = *this + other; }
 		void operator +=(float c) { *this = *this + c; }
 
-		Vector2 operator -(const Vector2& other) { return Vector2(x - other.x, y - other.y); }
-		Vector2 operator -(float c) { return Vector2(x - c, y - c); }
+		Vector2 operator -(const Vector2& other) const { return Vector2(x - other.x, y - other.y); }
+		Vector2 operator -(float c) const { return Vector2(x - c, y - c); }
 		void operator -=(const Vector2& other) { *this = *this - other; }
 		void operator -=(float c) { *this = *this - c; }
 
-		Vector2 operator *(const Vector2& other) { return Vector2(x * other.x, y * other.y); }
-		Vector2 operator *(float c) { return Vector2(x * c, y * c); }
+		Vector2 operator *(const Vector2& other) const { return Vector2(x * other.x, y * other.y); }
+		Vector2 operator *(float c) const { return Vector2(x * c, y * c); }
 		void operator *=(const Vector2& other) { *this = *this * other; }
 		void operator *=(float c) { *this = *this * c; }
 
-		Vector2 operator /(float c) { return Vector2(x / c, y / c); }
+		Vector2 operator /(float c) const { return Vector2(x / c, y / c); }
 		void operator /=(float c) { *this = *this / c; }
 	public:
 		float x, y;
@@ -80,22 +83,28 @@ namespace Canvas {
 		{
 		}
 
-		Vector3 operator +(const Vector3& other) { return Vector3(x + other.x, y + other.y, z + other.z); }
-		Vector3 operator +(float c) { return Vector3(x + c, y + c, z + c); }
+		Vector2 XY() { return Vector2(x, y); }
+		Vector2 XZ() { return Vector2(x, z); }
+		Vector2 YZ() { return Vector2(y, z); }
+
+		template<typename T>
+		operator T() { return *(T*)(this); }
+
+		Vector3 operator +(const Vector3& other) const { return Vector3(x + other.x, y + other.y, z + other.z); }
+		Vector3 operator +(float c) const { return Vector3(x + c, y + c, z + c); }
 		void operator +=(const Vector3& other) { *this = *this + other; }
 		void operator +=(float c) { *this = *this + c; }
 
-		Vector3 operator -(const Vector3& other) { return Vector3(x - other.x, y - other.y, z - other.z); }
-		Vector3 operator -(float c) { return Vector3(x - c, y - c, z - c); }
+		Vector3 operator -(const Vector3& other) const { return Vector3(x - other.x, y - other.y, z - other.z); }
+		Vector3 operator -(float c) const { return Vector3(x - c, y - c, z - c); }
 		void operator -=(const Vector3& other) { *this = *this - other; }
-		void operator -=(float c) { *this = *this - c; }
 
-		Vector3 operator *(const Vector3& other) { return Vector3(x * other.x, y * other.y, z * other.z); }
-		Vector3 operator *(float c) { return Vector3(x * c, y * c, z * c); }
+		Vector3 operator *(const Vector3& other) const { return Vector3(x * other.x, y * other.y, z * other.z); }
+		Vector3 operator *(float c) const { return Vector3(x * c, y * c, z * c); }
 		void operator *=(const Vector3& other) { *this = *this * other; }
 		void operator *=(float c) { *this = *this * c; }
 
-		Vector3 operator /(float c) { return Vector3(x / c, y / c, z / c); }
+		Vector3 operator /(float c) const { return Vector3(x / c, y / c, z / c); }
 		void operator /=(float c) { *this = *this / c; }
 	public:
 		float x, y, z;
@@ -123,23 +132,37 @@ namespace Canvas {
 			: x(x), y(y), z(z), w(w)
 		{
 		}
+		
+		Vector2 XY() { return Vector2(x, y); }
+		Vector2 XZ() { return Vector2(x, z); }
+		Vector2 XW() { return Vector2(x, w); }
+		Vector2 YZ() { return Vector2(y, z); }
+		Vector2 YW() { return Vector2(y, w); }
+		Vector2 ZW() { return Vector2(z, w); }
+		Vector3 XYZ() { return Vector3(x, y, z); }
+		Vector3 XYW() { return Vector3(x, y, w); }
+		Vector3 XZW() { return Vector3(x, z, w); }
+		Vector3 YZW() { return Vector3(y, z, w); }
 
-		Vector4 operator +(const Vector4& other) { return Vector4(x + other.x, y + other.y, z + other.z, w + other.w); }
-		Vector4 operator +(float c) { return Vector4(x + c, y + c, z + c, w + c); }
+		template<typename T>
+		operator T() { return *(T*)(this); }
+
+		Vector4 operator +(const Vector4& other) const { return Vector4(x + other.x, y + other.y, z + other.z, w + other.w); }
+		Vector4 operator +(float c) const { return Vector4(x + c, y + c, z + c, w + c); }
 		void operator +=(const Vector4& other) { *this = *this + other; }
 		void operator +=(float c) { *this = *this + c; }
 
-		Vector4 operator -(const Vector4& other) { return Vector4(x - other.x, y - other.y, z - other.z, w - other.w); }
-		Vector4 operator -(float c) { return Vector4(x - c, y - c, z - c, w - c); }
+		Vector4 operator -(const Vector4& other) const { return Vector4(x - other.x, y - other.y, z - other.z, w - other.w); }
+		Vector4 operator -(float c) const { return Vector4(x - c, y - c, z - c, w - c); }
 		void operator -=(const Vector4& other) { *this = *this - other; }
 		void operator -=(float c) { *this = *this - c; }
 
-		Vector4 operator *(const Vector4& other) { return Vector4(x * other.x, y * other.y, z * other.z, w * other.w); }
-		Vector4 operator *(float c) { return Vector4(x * c, y * c, z * c, w * c); }
+		Vector4 operator *(const Vector4& other) const { return Vector4(x * other.x, y * other.y, z * other.z, w * other.w); }
+		Vector4 operator *(float c) const { return Vector4(x * c, y * c, z * c, w * c); }
 		void operator *=(const Vector4& other) { *this = *this * other; }
 		void operator *=(float c) { *this = *this * c; }
 
-		Vector4 operator /(float c) { return Vector4(x / c, y / c, z / c, w / c); }
+		Vector4 operator /(float c) const { return Vector4(x / c, y / c, z / c, w / c); }
 		void operator /=(float c) { *this = *this / c; }
 	public:
 		float x, y, z, w;
@@ -164,39 +187,44 @@ namespace Canvas {
 	/**
 	 * @brief Clear the whole canvas using the specified colour
 	 */
-	void CANVAS_API Clear(uint32_t r, uint32_t g, uint32_t b);
-	inline void CANVAS_API Clear(uint32_t grey) { Clear(grey, grey, grey); }
-	inline void CANVAS_API Clear(Vector3 colour) { Clear(colour.x, colour.y, colour.z); }
+	void CANVAS_API Clear(const Vector3& colour); 
+	inline void CANVAS_API Clear(float r, float g, float b) { Clear({ r, g, b }); }
+	inline void CANVAS_API Clear(float grey) { Clear({ grey, grey, grey }); }
 
 	/**
 	 * @brief Draw a rectangle
 	 */
-	void CANVAS_API Rect(int x, int y, uint32_t w, uint32_t h);
-	inline void CANVAS_API Rect(Vector2 position, Vector2 dimensions) { Rect(position.x, position.y, dimensions.x, dimensions.y); }
+	void CANVAS_API Rect(const Vector3& position, const Vector3& dimensions);
+	void CANVAS_API Rect(const Vector2& position, const Vector2& dimensions);
+	void CANVAS_API Rect(float x, float y, float w, float h);
 
 	/**
 	 * @brief Draw a textured rectangle
 	 */
-	void CANVAS_API TexturedRect(int x, int y, uint32_t w, uint32_t h, Texture texture);
-	inline void CANVAS_API TexturedRect(Vector2 position, Vector2 dimensions, Texture texture) { TexturedRect(position.x, position.y, dimensions.x, dimensions.y, texture); }
+	void CANVAS_API TexturedRect(const Vector3& position, const Vector3& dimensions, Texture texture);
+	void CANVAS_API TexturedRect(const Vector2& position, const Vector2& dimensions, Texture texture);
+	void CANVAS_API TexturedRect(float x, float y, float w, float h, Texture texture);
 
 	/**
 	 * @brief Draw an ellipse
 	 */
-	void CANVAS_API Ellipse(int x, int y, uint32_t w, uint32_t h);
-	inline void CANVAS_API Ellipse(Vector2 position, Vector2 dimensions) { Ellipse(position.x, position.y, dimensions.x, dimensions.y); }
+	void CANVAS_API Ellipse(const Vector3& position, const Vector3& dimensions);
+	void CANVAS_API Ellipse(const Vector2& position, const Vector2& dimensions);
+	void CANVAS_API Ellipse(float x, float y, float w, float h);
 
 	/**
 	 * @brief Draw a line from point (x1, y1) to point (x2, y2)
 	 */
-	void CANVAS_API Line(int x1, int y1, int x2, int y2);
-	inline void CANVAS_API Line(Vector2 p1, Vector2 p2) { Line(p1.x, p1.y, p2.x, p2.y); }
+	void CANVAS_API Line(const Vector3& p1, const Vector3& p2);
+	void CANVAS_API Line(const Vector2& p1, const Vector2& p2);
+	void CANVAS_API Line(float x1, float y1, float x2, float y2);
 
 	/**
 	 * @brief Draw a bezier curve from point (x1, y1) to point (x4, y4) using 2 control points (x2, y2), (x3, y3)
 	 */
-	void CANVAS_API BezierCurve(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
-	inline void CANVAS_API BezierCurve(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4) { BezierCurve(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y); }
+	void CANVAS_API BezierCurve(const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4);
+	void CANVAS_API BezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3, const Vector2& p4);
+	void CANVAS_API BezierCurve(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 
 	/**
 	 * @brief Load a font.
@@ -209,7 +237,7 @@ namespace Canvas {
 	/**
 	 * @brief Sets the font size
 	 */
-	void CANVAS_API FontSize(uint32_t size);
+	void CANVAS_API FontSize(float size);
 
 	/**
 	 * @return Line height for the set font.
@@ -219,8 +247,9 @@ namespace Canvas {
 	/**
 	 * @brief Draw text. Text colour is affected by stroke colour.
 	 */
-	void CANVAS_API Text(const char* text, int x, int y, Font font);
-	inline void CANVAS_API Text(const char* text, Vector2 position, Font font) { Text(text, position.x, position.y, font); }
+	void CANVAS_API Text(const char* text, const Vector3& position, Font font);
+	void CANVAS_API Text(const char* text, const Vector2& position, Font font);
+	void CANVAS_API Text(const char* text, float x, float y, Font font);
 
 	/**
 	 * @brief Draw a point of size 2x2 pixels. Point colour is affected by stroke colour.
@@ -239,23 +268,23 @@ namespace Canvas {
 	/**
 	 * @brief Set the fill colour of the next drawn shapes
 	 */
-	void CANVAS_API Fill(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
-	inline void CANVAS_API Fill(uint32_t grey) { Fill(grey, grey, grey); }
-	inline void CANVAS_API Fill(Vector3 colour) { Fill(colour.x, colour.y, colour.z); }
-	inline void CANVAS_API Fill(Vector4 colour) { Fill(colour.x, colour.y, colour.z, colour.w); }
+	void CANVAS_API Fill(const Vector4& colour);
+	inline void CANVAS_API Fill(const Vector3& colour) { Fill({ colour, 255 }); }
+	inline void CANVAS_API Fill(float r, float g, float b, float a = 255) { Fill({ r, g, b, a }); }
+	inline void CANVAS_API Fill(float grey) { Fill({ grey, grey, grey, 255 }); }
 
 	/**
 	 * @brief Set the stroke colour of the next drawn shape
 	 */
-	void CANVAS_API Stroke(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 255);
-	inline void CANVAS_API Stroke(uint32_t grey) { Stroke(grey, grey, grey); }
-	inline void CANVAS_API Stroke(Vector3 colour) { Stroke(colour.x, colour.y, colour.z); }
-	inline void CANVAS_API Stroke(Vector4 colour) { Stroke(colour.x, colour.y, colour.z, colour.w); }
+	void CANVAS_API Stroke(const Vector4& colour);
+	inline void CANVAS_API Stroke(const Vector3& colour) { Stroke({ colour, 255 }); }
+	inline void CANVAS_API Stroke(float r, float g, float b, float a = 255) { Stroke({ r, g, b, a }); }
+	inline void CANVAS_API Stroke(float grey) { Stroke({ grey, grey, grey, 255 }); }
 
 	/**
 	 * @brief Set the stroke weight of the next drawn shapes
 	 */
-	void CANVAS_API StrokeWeight(uint32_t weight);
+	void CANVAS_API StrokeWeight(float weight);
 
 	/**
 	 * @brief Disables filling of the next drawn shapes.
@@ -331,12 +360,12 @@ namespace Canvas {
 	/**
 	 * @return x-coordinate of the mouse.
 	 */
-	float CANVAS_API MouseX();
+	inline float CANVAS_API MouseX() { return MousePosition().x; }
 
 	/**
 	 * @return y-coordinate of the mouse.
 	 */
-	float CANVAS_API MouseY();
+	inline float CANVAS_API MouseY() { return MousePosition().y; }
 
 	/**
 	 * @return Width of the window.

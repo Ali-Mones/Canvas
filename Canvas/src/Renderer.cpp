@@ -209,7 +209,7 @@ void Renderer::Shutdown()
 	delete s_RenderData.WhiteTexture;
 }
 
-void Renderer::Clear(glm::vec4 colour)
+void Renderer::Clear(const glm::vec4& colour)
 {
 	s_RenderData.DrawCalls = 0;
 	s_RenderData.RectCount = 0;
@@ -218,7 +218,7 @@ void Renderer::Clear(glm::vec4 colour)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::vec4 fillColour, glm::vec4 strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor)
+void Renderer::Rect(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& fillColour, const glm::vec4& strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor)
 {
 	uint32_t vertexCount = s_RenderData.RectVerticesCurr - s_RenderData.RectVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
@@ -280,7 +280,7 @@ void Renderer::Rect(glm::vec3 position, glm::vec3 dimensions, float angle, glm::
 	s_RenderData.RectCount++;
 }
 
-void Renderer::Ellipse(glm::vec3 position, glm::vec3 dimensions, glm::vec4 fillColour, glm::vec4 strokeColour, int thickness, float angle)
+void Renderer::Ellipse(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec4& fillColour, const glm::vec4& strokeColour, int thickness, float angle)
 {
 	uint32_t vertexCount = s_RenderData.CircleVerticesCurr - s_RenderData.CircleVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)

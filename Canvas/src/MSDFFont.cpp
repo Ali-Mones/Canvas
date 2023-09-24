@@ -4,9 +4,20 @@
 #include <msdfgen-ext.h>
 #include <msdf-atlas-gen.h>
 #include <cassert>
+#include <iostream>
+#include <filesystem>
 
 MSDFFont::MSDFFont(const char* filepath)
 {
+	if (!std::filesystem::is_regular_file(filepath))
+	{
+		if (std::filesystem::absolute(filepath).make_preferred() == std::filesystem::path(filepath).make_preferred())
+			std::cout << "(ERROR): Couldn't load font file located at " << filepath << std::endl;
+		else
+			std::cout << "(ERROR): Couldn't load font file located at " << std::filesystem::current_path().string() << '\\' << std::filesystem::path(filepath).make_preferred().string() << std::endl;
+		return;
+	}
+
 	if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype())
 	{
 		// Load font file
