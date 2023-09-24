@@ -5,7 +5,7 @@
 
 #include "Core.h"
 
-class CANVAS_API Camera
+class Camera
 {
 public:
 	static Camera& Init(float windowWidth, float windowHeight);

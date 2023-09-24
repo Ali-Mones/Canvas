@@ -51,27 +51,27 @@ void Input()
 	Input::SetKeyCallback(Key::H, Action::Press, []() { FlipTextureHorizontally(hflip = !hflip); });
 	Input::SetKeyCallback(Key::V, Action::Press, []() { FlipTextureVertically(vflip = !vflip); });
 
-	CanvasCamera::MotionSpeed(200);
-	CanvasCamera::ZoomSpeed(200);
+	Canvas::Camera::MotionSpeed(200);
+	Canvas::Camera::ZoomSpeed(200);
 
 	if (Input::IsKeyPressed(Key::Space))
 		Canvas::Ellipse(Canvas::MouseX(), Canvas::MouseY(), 100, 100);
 
 	if (Input::IsKeyPressed(Key::Right))
-		CanvasCamera::MoveRight();
+		Canvas::Camera::MoveRight();
 
 	if (Input::IsKeyPressed(Key::Left))
-		CanvasCamera::MoveLeft();
+		Canvas::Camera::MoveLeft();
 
 	if (Input::IsKeyPressed(Key::Up))
-		CanvasCamera::MoveUp();
+		Canvas::Camera::MoveUp();
 
 	if (Input::IsKeyPressed(Key::Down))
-		CanvasCamera::MoveDown();
+		Canvas::Camera::MoveDown();
 
 	if (Input::IsKeyPressed(Key::Q))
-		CanvasCamera::ZoomIn();
+		Canvas::Camera::ZoomIn();
 
 	if (Input::IsKeyPressed(Key::E))
-		CanvasCamera::ZoomOut();
+		Canvas::Camera::ZoomOut();
 }

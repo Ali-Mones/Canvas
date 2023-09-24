@@ -7,52 +7,52 @@
 static float s_MotionSpeed = 100.0f;
 static float s_ZoomSpeed = 100.0f;
 
-void CanvasCamera::MoveRight()
+void Canvas::Camera::MoveRight()
 {
-	Camera::Get().MoveRight(s_MotionSpeed * 1 / Application::Get().FPS());
+	::Camera::Get().MoveRight(s_MotionSpeed * 1 / Application::Get().FPS());
 }
 
-void CanvasCamera::MoveLeft()
+void Canvas::Camera::MoveLeft()
 {
-	Camera::Get().MoveLeft(s_MotionSpeed * 1 / Application::Get().FPS());
+	::Camera::Get().MoveLeft(s_MotionSpeed * 1 / Application::Get().FPS());
 }
 
-void CanvasCamera::MoveUp()
+void Canvas::Camera::MoveUp()
 {
-	Camera::Get().MoveUp(s_MotionSpeed * 1 / Application::Get().FPS());
+	::Camera::Get().MoveUp(s_MotionSpeed * 1 / Application::Get().FPS());
 }
 
-void CanvasCamera::MoveDown()
+void Canvas::Camera::MoveDown()
 {
-	Camera::Get().MoveDown(s_MotionSpeed * 1 / Application::Get().FPS());
+	::Camera::Get().MoveDown(s_MotionSpeed * 1 / Application::Get().FPS());
 }
 
-void CanvasCamera::ZoomIn()
+void Canvas::Camera::ZoomIn()
 {
-	Camera::Get().ZoomIn(s_MotionSpeed * 1 / Application::Get().FPS());
+	::Camera::Get().ZoomIn(s_MotionSpeed * 1 / Application::Get().FPS());
 }
 
-void CanvasCamera::ZoomOut()
+void Canvas::Camera::ZoomOut()
 {
-	Camera::Get().ZoomOut(s_MotionSpeed * 1 / Application::Get().FPS());
+	::Camera::Get().ZoomOut(s_MotionSpeed * 1 / Application::Get().FPS());
 }
 
-void CanvasCamera::MotionSpeed(float speed)
+void Canvas::Camera::MotionSpeed(float speed)
 {
 	s_MotionSpeed = speed;
 }
 
-float CanvasCamera::MotionSpeed()
+float Canvas::Camera::MotionSpeed()
 {
 	return s_MotionSpeed;
 }
 
-void CanvasCamera::ZoomSpeed(float speed)
+void Canvas::Camera::ZoomSpeed(float speed)
 {
 	s_ZoomSpeed = speed;
 }
 
-float CanvasCamera::ZoomSpeed()
+float Canvas::Camera::ZoomSpeed()
 {
 	return s_ZoomSpeed;
 }
