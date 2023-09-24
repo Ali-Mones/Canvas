@@ -415,7 +415,7 @@ namespace Canvas {
 		double xpos, ypos;
 		GLFWwindow* window = Application::Get().GetWindow()->NativeWindow();
 		glfwGetCursorPos(window, &xpos, &ypos);
-		glm::vec4 pos = Camera::Get().GetWorldPosition(xpos, ypos);
+		glm::vec4 pos = ::Camera::Get().GetWorldPosition(xpos, ypos);
 
 		if (s_Data.OriginPosition == Canvas::OriginPosition::Center)
 		{
@@ -437,12 +437,12 @@ namespace Canvas {
 
 	uint32_t WindowWidth()
 	{
-		return Camera::Get().WindowWidth();
+		return ::Camera::Get().WindowWidth();
 	}
 
 	uint32_t WindowHeight()
 	{
-		return Camera::Get().WindowHeight();
+		return ::Camera::Get().WindowHeight();
 	}
 
 	float FontLineHeight(Font font)

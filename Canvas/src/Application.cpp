@@ -28,6 +28,7 @@ Application::Application(const char* name, uint32_t windowWidth, uint32_t window
     m_Window = new Window(name, windowWidth, windowHeight, vsync);
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = NULL;
 
     ImGui::StyleColorsLight();
 
