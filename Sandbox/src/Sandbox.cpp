@@ -39,11 +39,14 @@ void Draw()
 	Input();
 	Clear(0, 255, 0);
 
-	Rect(0, 0, 200, 200);
-
 	Stroke(24);
 	FontSize(120);
-	Text("today we kill your face", 0, 0, arial);
+	Stroke(0);
+	StrokeWeight(10);
+	Line(0, 0, 900, 0);
+	Stroke(255);
+	NoRotate();
+	Text("hello there", 0, 0, arial);
 }
 
 void Input()

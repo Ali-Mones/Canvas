@@ -19,10 +19,10 @@ public:
 	static void Flush();
 
 	static void Clear(const glm::vec4& colour);
-	static void Rect(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& fillColour, const glm::vec4& strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor);
-	static void Ellipse(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec4& fillColour, const glm::vec4& strokeColour, int thickness, float angle);
+	static void Rect(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec3& rotation, const glm::vec4& fillColour, const glm::vec4& strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor);
+	static void Ellipse(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec3& rotation, const glm::vec4& fillColour, const glm::vec4& strokeColour, int thickness);
 	static void Quad(int p1, int p2, int p3, int p4);
-	static void Text(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& colour, const std::string& text, const Font* font, uint32_t fontSize);
+	static void Text(const glm::vec3& position, const glm::vec3& rotation, const glm::vec4& colour, const std::string& text, const Font* font, uint32_t fontSize);
 
 	static uint32_t QuadCount();
 	static uint32_t DrawCalls();

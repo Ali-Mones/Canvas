@@ -23,6 +23,7 @@ struct CanvasData
 	float StrokeWeight = 1;
 
 	float Z = -1.0f;
+	Canvas::Vector3 Rotation = Canvas::Vector3(0.0f);
 
 	float TilingFactor = 1.0f;
 	bool HorizontalFlip = false;
@@ -47,15 +48,6 @@ static Canvas::Vector3 GetTextDimensions(const std::string& text, Font* font)
 
 	for (const char& c : text)
 	{
-		if (c == '\r')
-			continue;
-		if (c == '\n')
-		{
-			//textWidth = std::max(textWidth, x);
-			x = 0;
-			y -= fsScale * metrics.lineHeight;
-			continue;
-		}
 		const msdf_atlas::GlyphGeometry* glyph = font->FontGeometry.getGlyph(c);
 		if (glyph)
 		{
@@ -137,7 +129,7 @@ namespace Canvas {
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Rect(pos, { dimensions.x, dimensions.y, dimensions.z }, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
+		Renderer::Rect(pos, { dimensions.x, dimensions.y, dimensions.z }, s_Data.Rotation, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, nullptr, 1.0f);
 	}
 
 	void Rect(const Vector2& position, const Vector2& dimensions)
@@ -171,7 +163,7 @@ namespace Canvas {
 			strokeColour = glm::vec4(0);
 
 		if (s_Data.TexturesMap.count(texture))
-			Renderer::Rect(pos, { w, h, 0.0f }, 0.0f, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, s_Data.TexturesMap[texture], s_Data.TilingFactor);
+			Renderer::Rect(pos, { w, h, 0.0f }, s_Data.Rotation, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, s_Data.TexturesMap[texture], s_Data.TilingFactor);
 		else
 			std::cout << "No Texture found with id = " << texture << std::endl;
 	}
@@ -200,9 +192,9 @@ namespace Canvas {
 			strokeColour = glm::vec4(0);
 
 		if (strokeColour == glm::vec4(0))
-			Renderer::Ellipse(pos, { dimensions.x, dimensions.y, dimensions.z }, s_Data.FillColour, strokeColour, 0.0f, 0.0f);
+			Renderer::Ellipse(pos, { dimensions.x, dimensions.y, dimensions.z }, s_Data.Rotation, s_Data.FillColour, strokeColour, 0.0f);
 		else
-			Renderer::Ellipse(pos, { dimensions.x, dimensions.y, dimensions.z }, s_Data.FillColour, strokeColour, s_Data.StrokeWeight, 0.0f);
+			Renderer::Ellipse(pos, { dimensions.x, dimensions.y, dimensions.z }, s_Data.Rotation, s_Data.FillColour, strokeColour, s_Data.StrokeWeight);
 	}
 
 	void Ellipse(const Vector2& position, const Vector2& dimensions)
@@ -233,13 +225,13 @@ namespace Canvas {
 		if (!s_Data.StrokeWeight)
 			strokeColour = glm::vec4(0);
 
-		Renderer::Rect(pos, dims, angle, strokeColour, glm::vec4(0), 0.0f, nullptr, 1.0f);
+		Renderer::Rect(pos, dims, glm::vec3(0.0f, 0.0f, angle), strokeColour, glm::vec4(0), 0.0f, nullptr, 1.0f);
 
 		float diameter = s_Data.StrokeWeight;
 		glm::vec3 circleDims(diameter, diameter, 0);
 
-		Renderer::Ellipse(c1, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
-		Renderer::Ellipse(c2, circleDims, strokeColour, glm::vec4(0), 0.0f, 0.0f);
+		Renderer::Ellipse(c1, circleDims, glm::vec3(0.0f), strokeColour, glm::vec4(0), 0.0f);
+		Renderer::Ellipse(c2, circleDims, glm::vec3(0.0f), strokeColour, glm::vec4(0), 0.0f);
 	}
 
 	void Line(const Vector2& p1, const Vector2& p2)
@@ -297,9 +289,10 @@ namespace Canvas {
 
 	void Text(const char* text, const Vector3& position, Font font)
 	{
-		Vector3 dims = GetTextDimensions(text, s_Data.FontsMap[font]);
-		Vector3 pos = StandardisePosition(position, { s_Data.FontSize * dims.x, s_Data.FontSize * dims.y });
-		Renderer::Text(pos, dims, 0.0f, s_Data.StrokeColour, text, s_Data.FontsMap[font], s_Data.FontSize);
+		Vector3 dims = GetTextDimensions(text, s_Data.FontsMap[font]) * s_Data.FontSize;
+		Vector3 pos = position - Vector3(dims.x / 2.0f, dims.y / 4.0f, 0.0f);
+		pos = StandardisePosition(pos, dims);
+		Renderer::Text(pos, s_Data.Rotation, s_Data.StrokeColour, text, s_Data.FontsMap[font], s_Data.FontSize);
 	}
 
 	void Text(const char* text, const Vector2& position, Font font)
@@ -354,6 +347,21 @@ namespace Canvas {
 	void NoStroke()
 	{
 		s_Data.StrokeWeight = 0;
+	}
+
+	void Rotate(float angle, const Vector3& axes)
+	{
+		if (axes.x == 1)
+			s_Data.Rotation.x = angle;
+		if (axes.y == 1)
+			s_Data.Rotation.y = angle;
+		if (axes.z == 1)
+			s_Data.Rotation.z = angle;
+	}
+
+	void NoRotate()
+	{
+		s_Data.Rotation = Vector3(0.0f);
 	}
 
 	void TextureTilingFactor(float tilingFactor)

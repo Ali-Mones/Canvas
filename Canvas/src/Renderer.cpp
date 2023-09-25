@@ -3,6 +3,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <stb_image_write/stb_image_write.h>
 
 #include "Shader.h"
@@ -218,7 +219,7 @@ void Renderer::Clear(const glm::vec4& colour)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::Rect(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& fillColour, const glm::vec4& strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor)
+void Renderer::Rect(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec3& rotation, const glm::vec4& fillColour, const glm::vec4& strokeColour, uint32_t thickness, const Texture2D* texture, float tilingFactor)
 {
 	uint32_t vertexCount = s_RenderData.RectVerticesCurr - s_RenderData.RectVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
@@ -256,7 +257,7 @@ void Renderer::Rect(const glm::vec3& position, const glm::vec3& dimensions, floa
 	float thicknessY = (dimensions.x / dimensions.y) * thicknessX;
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x, position.y, position.z))
-		* glm::rotate(glm::mat4(1), angle, { 0, 0, 1 })
+		* glm::toMat4(glm::quat(rotation))
 		* glm::scale(glm::mat4(1), glm::vec3(dimensions.x, dimensions.y, 0));
 
 	static glm::vec2 texCoords[] = { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } };
@@ -280,7 +281,7 @@ void Renderer::Rect(const glm::vec3& position, const glm::vec3& dimensions, floa
 	s_RenderData.RectCount++;
 }
 
-void Renderer::Ellipse(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec4& fillColour, const glm::vec4& strokeColour, int thickness, float angle)
+void Renderer::Ellipse(const glm::vec3& position, const glm::vec3& dimensions, const glm::vec3& rotation, const glm::vec4& fillColour, const glm::vec4& strokeColour, int thickness)
 {
 	uint32_t vertexCount = s_RenderData.CircleVerticesCurr - s_RenderData.CircleVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount)
@@ -290,7 +291,7 @@ void Renderer::Ellipse(const glm::vec3& position, const glm::vec3& dimensions, c
 	}
 
 	glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x, position.y, position.z))
-		* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
+		* glm::toMat4(glm::quat(rotation))
 		* glm::scale(glm::mat4(1), glm::vec3(dimensions.x, dimensions.y, 0));
 
 	float thiccness = dimensions.x > dimensions.y ? thickness / dimensions.y : thickness / dimensions.x;
@@ -311,10 +312,9 @@ void Renderer::Ellipse(const glm::vec3& position, const glm::vec3& dimensions, c
 	s_RenderData.RectCount++;
 }
 
-void Renderer::Text(const glm::vec3& position, const glm::vec3& dimensions, float angle, const glm::vec4& colour, const std::string& text, const Font* font, uint32_t fontSize)
+void Renderer::Text(const glm::vec3& position, const glm::vec3& rotation, const glm::vec4& colour, const std::string& text, const Font* font, uint32_t fontSize)
 {
 	assert(font);
-
 	uint32_t vertexCount = s_RenderData.TextVerticesCurr - s_RenderData.TextVerticesBase;
 	if (vertexCount == s_RenderData.MaxVertexCount || s_RenderData.FontTextureSlotIndex >= s_RenderData.MaxTextureSlots)
 	{
@@ -344,19 +344,9 @@ void Renderer::Text(const glm::vec3& position, const glm::vec3& dimensions, floa
 	double x = 0, y = 0;
 	double texelWidth = 1.0 / font->FontAtlas->Width();
 	double texelHeight = 1.0 / font->FontAtlas->Height();
-	double textWidth = dimensions.x, textHeight = dimensions.y;
 
 	for (const char& c : text)
 	{
-		if (c == '\r')
-			continue;
-		if (c == '\n')
-		{
-			textWidth = std::max(textWidth, x);
-			x = 0;
-			y -= fsScale * metrics.lineHeight;
-			continue;
-		}
 		const msdf_atlas::GlyphGeometry* glyph = font->FontGeometry.getGlyph(c);
 		if (glyph)
 		{
@@ -370,8 +360,8 @@ void Renderer::Text(const glm::vec3& position, const glm::vec3& dimensions, floa
 				pl += x, pb += y, pr += x, pt += y;
 				il *= texelWidth, ib *= texelHeight, ir *= texelWidth, it *= texelHeight;
 
-				glm::mat4 transform = glm::translate(glm::mat4(1), glm::vec3(position.x - fontSize * textWidth / 2, position.y - fontSize * textHeight / 3, position.z))
-					* glm::rotate(glm::mat4(1), angle, glm::vec3(0, 0, 1))
+				glm::mat4 transform = glm::translate(glm::mat4(1), position)
+					* glm::toMat4(glm::quat(rotation))
 					* glm::scale(glm::mat4(1), glm::vec3(fontSize, fontSize, 0));
 
 				s_RenderData.TextVerticesCurr->Position = transform * glm::vec4(pl, pb, 0.0f, 1.0f);

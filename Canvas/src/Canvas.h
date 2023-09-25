@@ -299,6 +299,17 @@ namespace Canvas {
 	void CANVAS_API NoStroke();
 
 	/**
+	 * @brief Rotate the next drawn shapes by angle about the specified axes.
+	 * @brief The axes parameter should define the rotation axes. Example: Rotation about the x and y axes would be (1, 1, 0)
+	 */
+	void CANVAS_API Rotate(float angle, const Vector3& axes);
+
+	/**
+	 * @brief Resets rotation on all axes back to 0.
+	 */
+	void CANVAS_API NoRotate();
+
+	/**
 	 * @brief Sets the tiling factor of the next drawn textures.
 	 * @brief Drawn textured rectangles will be tilingFactor * tilingFactor of the texture.
 	 */
